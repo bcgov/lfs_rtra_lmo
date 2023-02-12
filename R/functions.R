@@ -32,46 +32,152 @@ aggregate_pivot <- function(tbbl){
   diff <- bind_rows(just_subtotal, total)%>%
     summarise(across(where(is.numeric), ~ diff(.x, na.rm = TRUE)))%>%
     mutate(lmo_ind_code="ind99",
-           lmo_detailed_industry="Unknown")
+           lmo_detailed_industry="Naics 1100 & 2100")
 
   bind_rows(with_subtotal, diff, total)
 }
-agg_north_coast_nechako <- function(tbbl){
+
+aggregate_pivot5 <- function(tbbl){
+  both <- tbbl%>%
+    group_by(syear, naics_5)%>%
+    summarise(count=sum(count, na.rm=TRUE))%>%
+    filter(!is.na(syear))%>%
+    pivot_wider(id_cols=naics_5, names_from = syear, values_from = count)
+
+  with_subtotal <- both%>%
+    filter(!is.na(naics_5))%>%
+    adorn_totals(name="Subtotal")
+
+  total <- both%>%
+    filter(is.na(naics_5))%>%
+    adorn_totals(name="Grand Total")%>%
+    filter(!is.na(naics_5))
+
+  just_subtotal <- with_subtotal%>%
+    filter(naics_5=="Subtotal")
+
+  diff <- bind_rows(just_subtotal, total)%>%
+    summarise(across(where(is.numeric), ~ diff(.x, na.rm = TRUE)))%>%
+    mutate(naics_5="Naics 1100 & 2100")
+
+  bind_rows(with_subtotal, diff, total)
+}
+
+aggregate_pivot3 <- function(tbbl){
+  both <- tbbl%>%
+    group_by(syear, naics3)%>%
+    summarise(count=sum(count, na.rm=TRUE))%>%
+    filter(!is.na(syear))%>%
+    pivot_wider(id_cols=naics3, names_from = syear, values_from = count)
+
+  with_subtotal <- both%>%
+    filter(!is.na(naics3))%>%
+    adorn_totals(name="Subtotal")
+
+  total <- both%>%
+    filter(is.na(naics3))%>%
+    adorn_totals(name="Grand Total")%>%
+    filter(!is.na(naics3))
+
+  just_subtotal <- with_subtotal%>%
+    filter(naics3=="Subtotal")
+
+  diff <- bind_rows(just_subtotal, total)%>%
+    summarise(across(where(is.numeric), ~ diff(.x, na.rm = TRUE)))%>%
+    mutate(naics3="Naics 1100 & 2100")
+
+  bind_rows(with_subtotal, diff, total)
+}
+
+# aggregate_pivot2 <- function(tbbl){
+#   both <- tbbl%>%
+#     group_by(syear, naics2)%>%
+#     summarise(count=sum(count, na.rm=TRUE))%>%
+#     filter(!is.na(syear))%>%
+#     pivot_wider(id_cols=naics2, names_from = syear, values_from = count)
+#
+#   with_subtotal <- both%>%
+#     filter(!is.na(naics2))%>%
+#     adorn_totals(name="Subtotal")
+#
+#   total <- both%>%
+#     filter(is.na(naics2))%>%
+#     adorn_totals(name="Grand Total")%>%
+#     filter(!is.na(naics2))
+#
+#   just_subtotal <- with_subtotal%>%
+#     filter(naics2=="Subtotal")
+#
+#   diff <- bind_rows(just_subtotal, total)%>%
+#     summarise(across(where(is.numeric), ~ diff(.x, na.rm = TRUE)))%>%
+#     mutate(naics2="Naics 1100 & 2100")
+#
+#   bind_rows(with_subtotal, diff, total)
+# }
+
+aggregate_pivot2 <- function(tbbl, var){
+  quoted_var <- deparse(substitute(var))
+  both <- tbbl%>%
+    group_by(syear, {{  var  }})%>%
+    summarise(count=sum(count, na.rm=TRUE))%>%
+    filter(!is.na(syear))%>%
+    pivot_wider(id_cols={{  var  }}, names_from = syear, values_from = count)
+
+  with_subtotal <- both%>%
+    filter(!is.na({{  var  }}))%>%
+    adorn_totals(name="Subtotal")
+
+  total <- both%>%
+    filter(is.na({{  var  }}))%>%
+    adorn_totals(name="Grand Total")%>%
+    filter(!is.na({{  var  }}))
+
+  just_subtotal <- with_subtotal%>%
+    filter({{  var  }} =="Subtotal")
+
+  diff <- bind_rows(just_subtotal, total)%>%
+    summarise(across(where(is.numeric), ~ diff(.x, na.rm = TRUE)))%>%
+    mutate(!!quoted_var := "Naics 1100 & 2100")
+
+  bind_rows(with_subtotal, diff, total)
+}
+
+agg_north_coast_nechako <- function(tbbl, var1, var2=NULL){
   nechako <- tbbl%>%
     filter(bc_region=="Nechako")%>%
     ungroup()%>%
     select(agg_wide)%>%
     unnest(agg_wide)%>%
-    pivot_longer(cols=-c(lmo_ind_code, lmo_detailed_industry), names_to = "year", values_to = "nechako")
+    pivot_longer(cols=-c({{  var1  }},{{  var2  }}), names_to = "year", values_to = "nechako")
 
   north_coast <- tbbl%>%
     filter(bc_region=="North Coast")%>%
     ungroup()%>%
     select(agg_wide)%>%
     unnest(agg_wide)%>%
-    pivot_longer(cols=-c(lmo_ind_code, lmo_detailed_industry), names_to = "year", values_to = "north_coast")
+    pivot_longer(cols=-c({{  var1  }},{{  var2  }}), names_to = "year", values_to = "north_coast")
 
   full_join(nechako, north_coast)%>%
     mutate(value=nechako+north_coast)%>%
     select(-nechako, -north_coast)%>%
-    pivot_wider(id_cols = c(lmo_ind_code,lmo_detailed_industry),names_from = year, values_from = value)%>%
+    pivot_wider(id_cols = c({{  var1  }},{{  var2  }}), names_from = year, values_from = value)%>%
     nest()%>%
     rename(agg_wide = data)%>%
     mutate(bc_region = "North Coast & Nechako",
            data=NA)
 }
 
-write_sheet <- function(long_name, tbbl) {
+write_sheet <- function(long_name, tbbl, title, width1, width2) {
   colnames(tbbl) <- wrapR::make_title(colnames(tbbl))
   tbbl <- tbbl%>%
     mutate(across(where(is.numeric), ~round(.x, digits=digits)))
-  title <- paste("Employment for 64 LMO Industries",long_name,date_range, sep=", ")
+  title <- paste(title, long_name, date_range, sep=", ")
   subtitle <- "Source: LFS via RTRA"
   sheet_name <- str_trunc(long_name, width = 31) # excel cant handle sheet names longer than this
   createSheet(wb, sheet_name)
-  setColumnWidth(wb, sheet = sheet_name, column = 1:2, width = c(4000,15000))
+  setColumnWidth(wb, sheet = sheet_name, column = 1:2, width = c(width1,width2))
 
-  writeWorksheet( # add the data
+  writeWorksheet( # add the title
     wb,
     title,
     sheet_name,
@@ -81,7 +187,7 @@ write_sheet <- function(long_name, tbbl) {
     rownames = FALSE
   )
 
-  writeWorksheet( # add the data
+  writeWorksheet( # add the subtitle
     wb,
     subtitle,
     sheet_name,
