@@ -83,7 +83,7 @@ agg_north_coast_nechako <- function(tbbl, var1, var2=NULL){
     mutate(value=nechako+north_coast)%>%
     select(-nechako, -north_coast)%>%
     pivot_wider(id_cols = c({{  var1  }},{{  var2  }}), names_from = year, values_from = value)%>%
-    nest()%>%
+    nest(data=everything())%>%
     rename(agg_wide = data)%>%
     mutate(bc_region = "North Coast & Nechako",
            data=NA)
