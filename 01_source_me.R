@@ -45,7 +45,11 @@ tidy_mapping <- read_excel(here("data","mapping","2023_naics_to_lmo.xlsx"))%>%
 write_csv(tidy_mapping, here("data","mapping", "tidy_2023_naics_to_lmo.csv"))
 
 #raw data------------------
-emp_4digitnaics_regional <- vroom(here("data","rtra",list.files(here("data","rtra"), pattern = "naics")))%>%
+emp_4digitnaics_regional <- vroom(here("data",
+                                       "rtra",
+                                       "by_naics",
+                                       list.files(here("data","rtra", "by_naics"),
+                                                  pattern = "naics")))%>%
   clean_names()%>%
   filter(!is.na(syear),
          !naics_5 %in% c(1100,2100))%>% #not sure why these are included in 4 digit data?
@@ -64,11 +68,11 @@ lmo_regional_emp <- bind_rows(lmo_regional_emp, agg_north_coast_nechako(lmo_regi
   mutate(bc_region=if_else(is.na(bc_region), "British Columbia", bc_region))%>%
   arrange(bc_region)
 
-wb <- XLConnect::loadWorkbook(here("out",paste0("Employment for 64 LMO Industries,",date_range,".xlsx")), create = TRUE)
+wb <- XLConnect::loadWorkbook(here("out", "by_naics",paste0("Employment for 64 LMO Industries,",date_range,".xlsx")), create = TRUE)
 
 lmo_regional_emp%>%
   mutate(walk2(bc_region, agg_wide, write_sheet, "Employment for 64 LMO Industries", 5000, 15000))
-saveWorkbook(wb, here::here("out", paste0("Employment for 64 LMO Industries,",date_range,".xlsx")))
+saveWorkbook(wb, here::here("out", "by_naics", paste0("Employment for 64 LMO Industries,",date_range,".xlsx")))
 
 # nest the recent data by region-----------------
 
@@ -90,10 +94,10 @@ four_digit_regional_emp<- bind_rows(four_digit_regional_emp, agg_north_coast_nec
   mutate(bc_region=if_else(is.na(bc_region), "British Columbia", bc_region))%>%
   arrange(bc_region)
 
-wb <- XLConnect::loadWorkbook(here("out",paste0("Employment for 4 digit NAICS,",recent_range,".xlsx")), create = TRUE)
+wb <- XLConnect::loadWorkbook(here("out", "by_naics",paste0("Employment for 4 digit NAICS,",recent_range,".xlsx")), create = TRUE)
 four_digit_regional_emp%>%
   mutate(walk2(bc_region, agg_wide, write_sheet, "Employment for 4 digit NAICS", 5000, 3000))
-saveWorkbook(wb, here::here("out", paste0("Employment for 4 digit NAICS,",recent_range,".xlsx")))
+saveWorkbook(wb, here::here("out", "by_naics", paste0("Employment for 4 digit NAICS,",recent_range,".xlsx")))
 
 # 3 digit level---------------
 
@@ -104,10 +108,10 @@ three_regional_emp <- bind_rows(three_regional_emp, agg_north_coast_nechako(thre
   mutate(bc_region=if_else(is.na(bc_region), "British Columbia", bc_region))%>%
   arrange(bc_region)
 
-wb <- XLConnect::loadWorkbook(here("out",paste0("Employment for 3 digit NAICS,",recent_range,".xlsx")), create = TRUE)
+wb <- XLConnect::loadWorkbook(here("out", "by_naics",paste0("Employment for 3 digit NAICS,",recent_range,".xlsx")), create = TRUE)
 three_regional_emp%>%
   mutate(walk2(bc_region, agg_wide, write_sheet, "Employment for 3 digit NAICS", 5000, 3000))
-saveWorkbook(wb, here::here("out", paste0("Employment for 3 digit NAICS,",recent_range,".xlsx")))
+saveWorkbook(wb, here::here("out", "by_naics", paste0("Employment for 3 digit NAICS,",recent_range,".xlsx")))
 
 # 2 digit level---------------
 
@@ -118,10 +122,10 @@ two_regional_emp <- bind_rows(two_regional_emp, agg_north_coast_nechako(two_regi
   mutate(bc_region=if_else(is.na(bc_region), "British Columbia", bc_region))%>%
   arrange(bc_region)
 
-wb <- XLConnect::loadWorkbook(here("out",paste0("Employment for 2 digit NAICS,",recent_range,".xlsx")), create = TRUE)
+wb <- XLConnect::loadWorkbook(here("out", "by_naics",paste0("Employment for 2 digit NAICS,",recent_range,".xlsx")), create = TRUE)
 two_regional_emp%>%
   mutate(walk2(bc_region, agg_wide, write_sheet, "Employment for 2 digit NAICS", 5000, 3000))
-saveWorkbook(wb, here::here("out", paste0("Employment for 2 digit NAICS,",recent_range,".xlsx")))
+saveWorkbook(wb, here::here("out", "by_naics", paste0("Employment for 2 digit NAICS,",recent_range,".xlsx")))
 
 
 
