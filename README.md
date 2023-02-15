@@ -2,28 +2,20 @@
 [![Lifecycle:Experimental](https://img.shields.io/badge/Lifecycle-Experimental-339999)](<Redirect-URL>)
 
 
-
 lfs_rtra_lmo
 ============================
 
 ### Usage
 
-Describe data being used (links), and how to run. Eg:
+-Submit 17!!! sas scripts found in folder `sas_code` to https://www75.statcan.gc.ca/eft-tef/en/login-connexion.
+-Grab a coffee.
+-Parse through the 102 emails Stats Can sent you to find the names of the 17 csv files you need to download.
+-place the csv files who's name contains "retire" or "stat" in the folder `by_noc`
+-place the csv files who's name contains "naics" in the folder `by_naics`.
+-change the min and max years in the file  `00_source_me.R`
+-source the file `00_source_me.R`
+-output can be found in folder `out`.
 
-There is one scripts that are required for the analysis:
-
--   01_source_me.R
-
-
-#### Example
-
-This is a basic example which shows you how to solve a common problem:
-
-``` r
-## basic example code
-```
-
-### Project Status
 
 ### Getting Help or Reporting an Issue
 

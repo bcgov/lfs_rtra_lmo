@@ -89,13 +89,17 @@ agg_north_coast_nechako <- function(tbbl, var1, var2=NULL){
            data=NA)
 }
 
-write_sheet <- function(long_name, tbbl, title, width1, width2) {
+write_sheet <- function(long_name, tbbl, title, width1, width2, date_range) {
   colnames(tbbl) <- wrapR::make_title(colnames(tbbl))
   tbbl <- tbbl%>%
     mutate(across(where(is.numeric), ~round(.x, digits=digits)))
-  title <- paste(title, long_name, date_range, sep=", ")
+  title <- paste(title, long_name, date_range, sep=" ")%>%
+    str_replace_all("_"," ")%>%
+    str_to_title()
   subtitle <- "Source: LFS via RTRA"
-  sheet_name <- str_trunc(long_name, width = 31) # excel cant handle sheet names longer than this
+  sheet_name <- str_trunc(long_name, width = 31)%>% # excel cant handle sheet names longer than this
+    str_replace_all("_"," ")%>%
+    str_to_title()
   createSheet(wb, sheet_name)
   setColumnWidth(wb, sheet = sheet_name, column = 1:2, width = c(width1,width2))
 
@@ -129,3 +133,25 @@ write_sheet <- function(long_name, tbbl, title, width1, width2) {
     rownames = FALSE
   )
 }
+
+format_pivot <- function(tbbl){
+  tbbl%>%
+    mutate(value=scales::percent(value, accuracy=.1))%>%
+    pivot_wider(id_cols=noc_5, names_from = syear, values_from = value)
+}
+
+ave_retire_age <- function(tbbl){
+  total <- tbbl[is.na(tbbl$age),"count"][["count"]]
+  tbbl%>%
+    filter(!is.na(age))%>%
+    mutate(age=as.numeric(age),
+           weight=count/total,
+           age_weight=age*weight)%>%
+    summarize(retire_age=round(sum(age_weight, na.rm=TRUE),digits))%>%
+    pull()
+}
+
+
+
+
+
