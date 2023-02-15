@@ -91,7 +91,7 @@ nested <- retire_by_noc %>%
 retire_wide <- nested %>%
   select(-data) %>%
   pivot_wider(id_cols = noc_5, names_from = syear, values_from = retire_age) %>%
-  mutate(across(where(is.numeric), ~ if_else(near(.x, 0), NA, .x)))
+  mutate(across(where(is.numeric), ~ if_else(near(.x, 0), NA_real_, .x)))
 #write to excel--------------------------------------
 wb <- XLConnect::loadWorkbook(here("out", paste0("Average retirement age for 5 digit NOC,", date_range, ".xlsx")), create = TRUE)
 write_sheet("Average Retirement Age", retire_wide, title = NULL, 7000, 3000, date_range)
