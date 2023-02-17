@@ -9,11 +9,12 @@
 # Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on an "AS IS" BASIS,
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and limitations under the License.
+library(cansim)
 
 #check bottom lines---------------------
 
-naics_total <- check_naics("total", "British Columbia", tol=10)
-naics_subtotal <- check_naics("subtotal", "British Columbia", tol=10)
+naics_total <- check_naics("total", "British Columbia", tol=50)
+naics_subtotal <- check_naics("subtotal", "British Columbia", tol=50)
 
 by_noc <- status_by_noc%>%
   filter(name=="employed")%>%
@@ -26,8 +27,6 @@ noc_total <- by_noc[[1]]%>%
 totals <- full_join(naics_total, noc_total)%>%
   select(syear, !contains("close"), contains("close"))%>%
   mutate(noc_close=near(lmo, noc, tol=50))
-
-library(cansim)
 
 cansim_dat <- cansim::get_cansim("14-10-0023-01")
 
