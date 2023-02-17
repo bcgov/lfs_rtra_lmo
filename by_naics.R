@@ -29,8 +29,7 @@ tidy_mapping <- read_excel(here("data","mapping","2023_naics_to_lmo.xlsx"))%>%
   unnest(data)%>%
   rename(naics=data)%>%
   mutate(naics3=str_sub(naics,1,3),
-         naics2=str_sub(naics,1,2),
-         across(contains("naics"), ~ as.numeric(.x)))%>%
+         naics2=str_sub(naics,1,2))%>%
   ungroup()%>%
   select(contains("naics"), contains("lmo"))
 
@@ -44,9 +43,10 @@ emp_4digitnaics_regional <- vroom(here("data",
                                                   pattern = "naics")))%>%
   clean_names()%>%
   filter(syear %in% minmin_year:max_year,
-         !naics_5 %in% c(1100,2100))%>% #not sure why these are included in 4 digit data?
-  mutate(count=count/12)%>%
-  full_join(tidy_mapping, by=c("naics_5"="naics"))
+         !naics_5 %in% c("01100","02100"))%>%
+  mutate(count=count/12,
+         naics=str_sub(naics_5,2,5))%>%
+  full_join(tidy_mapping)
 
 #lmo industry aggregation-------------
 lmo_regional_emp <-emp_4digitnaics_regional%>%
@@ -72,15 +72,15 @@ recent_nested <-emp_4digitnaics_regional%>%
 
 # 4 digit level---------------
 
-four_digit_regional_emp<- recent_nested%>%
+four_regional_emp<- recent_nested%>%
   mutate(agg_wide=map(data, aggregate_pivot2, naics_5))
 
-four_digit_regional_emp<- bind_rows(four_digit_regional_emp, agg_north_coast_nechako(four_digit_regional_emp, naics_5))%>%
+four_regional_emp<- bind_rows(four_regional_emp, agg_north_coast_nechako(four_regional_emp, naics_5))%>%
   mutate(bc_region=if_else(is.na(bc_region), "British Columbia", bc_region))%>%
   arrange(bc_region)
 
 wb <- XLConnect::loadWorkbook(here("out", paste0("Employment for 4 digit NAICS,",recent_range,".xlsx")), create = TRUE)
-four_digit_regional_emp%>%
+four_regional_emp%>%
   mutate(walk2(bc_region, agg_wide, write_sheet, "Employment for 4 digit NAICS", 5000, 3000, recent_range))
 saveWorkbook(wb, here::here("out", paste0("Employment for 4 digit NAICS,",recent_range,".xlsx")))
 
@@ -113,9 +113,18 @@ two_regional_emp%>%
 saveWorkbook(wb, here::here("out", paste0("Employment for 2 digit NAICS,",recent_range,".xlsx")))
 
 
-
-
-
+# #checking
+#
+#
+# rich <- vroom(here("data","rtra","by_naics","RTRA6497120_emp1620naics.csv"))%>%
+#   clean_names()%>%
+#   filter(!is.na(syear),
+#          is.na(bc_region))%>%
+#   mutate(count=round(count/12,0))
+#
+#
+# rich_total <- rich%>%
+#   filter(is.na(naics_5))
 
 
 

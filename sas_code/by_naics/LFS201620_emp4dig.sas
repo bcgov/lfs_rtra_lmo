@@ -1,8 +1,11 @@
-DATA work.LMO_64IND;
-SET RTRAdata.LFS201620  (keep= ID PROV ERTAB LFSSTAT NAICS_5 SYEAR);
+DATA work.naics;
+SET RTRAdata.LFS201620  (keep= ID AGE PROV ERTAB LFSSTAT NAICS_5 SYEAR);
 
 /* Province B.C.*/
 if PROV=59;
+
+/* Age 15 or over */
+if AGE >= 15;
 
 /*Economic Region - British Columbia*/
 length BC_Region $ 30;
@@ -22,8 +25,8 @@ if LFSSTAT IN (1,2);
 run;
 
 %RTRAFreq(
-     InputDataset=work.LMO_64IND,
-     OutputName=emp1620naics4,
+     InputDataset=work.naics,
+     OutputName=emp1620naics,
      ClassVarList= SYEAR BC_Region NAICS_5,
      UserWeight=FINALWT);
 

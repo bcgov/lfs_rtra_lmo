@@ -36,3 +36,4 @@ recent_range <- paste(min_year,max_year, sep = "-")
 
 source("by_naics.R")
 source("by_noc.R")
+source("check_data.R")

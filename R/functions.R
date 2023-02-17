@@ -11,57 +11,67 @@ expand_naics <- function(tbbl){
   else if(tmp_length == 1) {paste0(tmp_string, str_pad(0:999, 3, pad = "0"))}
 }
 aggregate_pivot <- function(tbbl){
-  both <- tbbl%>%
+  raw_total <- tbbl%>%
+    filter(is.na(naics_5))%>%
+    select(syear, total=count)%>%
+    na.omit()
+
+  aggregated_long <- tbbl%>%
     group_by(syear, lmo_ind_code, lmo_detailed_industry)%>%
-    summarise(count=sum(count, na.rm=TRUE))%>%
-    filter(!is.na(syear))%>%
+    summarise(count=round(sum(count, na.rm=TRUE),digits))%>%
+    filter(!is.na(syear),
+           !is.na(lmo_ind_code))
+
+  subtotal <- aggregated_long%>%
+    group_by(syear)%>%
+    summarize(subtotal=sum(count))
+
+  diff <- full_join(raw_total, subtotal)%>%
+    mutate(unknown=total-subtotal)%>%
+    pivot_longer(cols=-syear, names_to = "name", values_to = "value")%>%
+    pivot_wider(names_from = syear, values_from = value)
+  diff <- diff[c(2,3,1),]
+  diff <- diff%>%
+    mutate(lmo_ind_code=name)%>%
+    rename(lmo_detailed_industry=name)
+
+  aggregated <- aggregated_long%>%
     pivot_wider(id_cols=c(lmo_ind_code, lmo_detailed_industry), names_from = syear, values_from = count)
 
-  with_subtotal <- both%>%
-    filter(!is.na(lmo_ind_code))%>%
-    adorn_totals(name="Subtotal", fill = "Subtotal")
-
-  total <- both%>%
-    filter(is.na(lmo_ind_code))%>%
-    adorn_totals(name="Grand Total", fill = "Grand Total")%>%
-    filter(!is.na(lmo_ind_code))
-
-  just_subtotal <- with_subtotal%>%
-    filter(lmo_ind_code=="Subtotal")
-
-  diff <- bind_rows(just_subtotal, total)%>%
-    summarise(across(where(is.numeric), ~ diff(.x, na.rm = TRUE)))%>%
-    mutate(lmo_ind_code="ind99",
-           lmo_detailed_industry="Naics 1100 & 2100")
-
-  bind_rows(with_subtotal, diff, total)
+  bind_rows(aggregated, diff)
 }
 
 aggregate_pivot2 <- function(tbbl, var){
   quoted_var <- deparse(substitute(var))
-  both <- tbbl%>%
+
+  raw_total <- tbbl%>%
+    filter(is.na(naics_5))%>%
+    select(syear, total=count)%>%
+    na.omit()
+
+  aggregated_long <- tbbl%>%
     group_by(syear, {{  var  }})%>%
-    summarise(count=sum(count, na.rm=TRUE))%>%
-    filter(!is.na(syear))%>%
-    pivot_wider(id_cols={{  var  }}, names_from = syear, values_from = count)
+    summarise(count=round(sum(count, na.rm=TRUE),digits))%>%
+    filter(!is.na(syear),
+           !is.na({{  var  }}))
 
-  with_subtotal <- both%>%
-    filter(!is.na({{  var  }}))%>%
-    adorn_totals(name="Subtotal")
+  subtotal <- aggregated_long%>%
+    group_by(syear)%>%
+    summarize(subtotal=sum(count))
 
-  total <- both%>%
-    filter(is.na({{  var  }}))%>%
-    adorn_totals(name="Grand Total")%>%
-    filter(!is.na({{  var  }}))
+  diff <- full_join(raw_total, subtotal)%>%
+    mutate(unknown=total-subtotal)%>%
+    pivot_longer(cols=-syear, names_to = "name", values_to = "value")%>%
+    pivot_wider(names_from = syear, values_from = value)
+  diff <- diff[c(2,3,1),]
+  diff <- diff%>%
+    rename(!!quoted_var := name)
 
-  just_subtotal <- with_subtotal%>%
-    filter({{  var  }} =="Subtotal")
+  aggregated <- aggregated_long%>%
+    pivot_wider(id_cols={{  var  }}, names_from = syear, values_from = count)%>%
+    arrange({{  var  }})
 
-  diff <- bind_rows(just_subtotal, total)%>%
-    summarise(across(where(is.numeric), ~ diff(.x, na.rm = TRUE)))%>%
-    mutate(!!quoted_var := "Naics 1100 & 2100")
-
-  bind_rows(with_subtotal, diff, total)
+  bind_rows(aggregated, diff)
 }
 
 agg_north_coast_nechako <- function(tbbl, var1, var2=NULL){
@@ -151,6 +161,48 @@ ave_retire_age <- function(tbbl){
     pull()
 }
 
+
+
+get_quoted_thing <- function(tbbl, quoted_thing, quoted_name, index1, index2=NULL){
+  tbbl%>%
+    filter({{  index1  }}==quoted_thing)%>%
+    pivot_longer(cols=-c({{  index1  }},{{  index2  }}), names_to="syear", values_to=quoted_name)%>%
+    filter(syear %in% min_year:max_year)%>%
+    ungroup()%>%
+    select(-{{  index1  }}, -{{  index2  }})
+}
+
+check_naics <- function(quoted_thing, region, tol){
+  lmo_dat <- lmo_regional_emp%>%
+    filter(bc_region==region)%>%
+    pull(agg_wide)
+  lmo_dat <- lmo_dat[[1]]
+  four_dat <- four_regional_emp%>%
+    filter(bc_region==region)%>%
+    pull(agg_wide)
+  four_dat <- four_dat[[1]]
+  three_dat <- three_regional_emp%>%
+    filter(bc_region==region)%>%
+    pull(agg_wide)
+  three_dat <- three_dat[[1]]
+  two_dat <- two_regional_emp%>%
+    filter(bc_region==region)%>%
+    pull(agg_wide)
+  two_dat <- two_dat[[1]]
+
+  lmo <- get_quoted_thing(lmo_dat, quoted_thing, "lmo", lmo_ind_code, lmo_detailed_industry)
+  four <- get_quoted_thing(four_dat,quoted_thing, "four", naics_5)
+  three <- get_quoted_thing(three_dat,quoted_thing,"three", naics3)
+  two <- get_quoted_thing(two_dat,quoted_thing,"two", naics2)
+  lmo%>%
+    full_join(four)%>%
+    full_join(three)%>%
+    full_join(two)%>%
+    mutate(four_close=near(lmo, four, tol=tol),
+           three_close=near(lmo, three, tol=tol),
+           two_close=near(lmo, two, tol=tol)
+    )
+}
 
 
 
