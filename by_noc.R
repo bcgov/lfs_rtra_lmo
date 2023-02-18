@@ -14,8 +14,14 @@
 #NOTE THIS FILE DEPENDS ON CONSTANTS AND LIBRARIES LOADED IN THE FILE 00_source_me.R
 ######################################################################################
 
+noc21_descriptions <- read_csv(here("data","mapping","noc21descriptions.csv"),
+                               col_types = cols(
+                                 noc_5 = col_character(),
+                                 class_title = col_character()
+                               ))
+
 # labour force status-------------------------
-status_by_noc <- vroom(here(
+joined <- vroom(here(
   "data",
   "rtra",
   "by_noc",
@@ -28,25 +34,35 @@ status_by_noc <- vroom(here(
     syear %in% min_year:max_year,
     noc_5 != "missi"
   ) %>%
-  mutate(count = round(count / 12, digits))
+  mutate(count = round(count / 12, digits))%>%
+  full_join(noc21_descriptions)
+
+missing_nocs <- joined%>%
+  filter(is.na(syear))%>%
+  select(noc_5, class_title)
+
+status_by_noc <- joined%>%
+  filter(!is.na(syear))
+
+
 #nest by measure---------------------
 nested <- status_by_noc %>%
   filter(!is.na(noc_5)) %>%
-  pivot_wider(names_from = lf_stat, values_from = count) %>%
-  clean_names() %>%
-  select(-na, -unknown) %>%
+  pivot_wider(id_cols=c(noc_5, class_title, syear), names_from = lf_stat, values_from = count) %>%
+  clean_names()%>%
+  select(-na, -unknown)%>%
   mutate(
     labour_force = employed + unemployed,
     unemployment_rate = unemployed / labour_force
   ) %>%
-  pivot_longer(cols = -c(syear, noc_5), names_to = "name", values_to = "value") %>%
+  pivot_longer(cols = -c(syear, class_title, noc_5), names_to = "name", values_to = "value") %>%
   group_by(name) %>%
   nest()
 # for counts do not format the data, make wide, add totals---------------
 no_format <- nested %>%
   filter(name != "unemployment_rate") %>%
   mutate(
-    wide = map(data, pivot_wider, id_cols = noc_5, names_from = syear, values_from = value),
+    wide = map(data, pivot_wider, id_cols = c(noc_5, class_title), names_from = syear, values_from = value),
     wide = map(wide, adorn_totals)
   )
 # for unemployment rate format as a percent, make wide, no totals-----------------
@@ -58,7 +74,7 @@ status_by_noc <- bind_rows(no_format, format_as_percent)
 #save to excel-------------------------
 wb <- XLConnect::loadWorkbook(here("out", paste0("Labour force status for 5 digit NOC,", date_range, ".xlsx")), create = TRUE)
 status_by_noc %>%
-  mutate(walk2(name, wide, write_sheet, title = NULL, 7000, 3000, date_range))
+  mutate(walk2(name, wide, write_sheet, title = NULL, 7000, 10000, date_range))
 saveWorkbook(wb, here::here("out", paste0("Labour force status for 5 digit NOC,", date_range, ".xlsx")))
 # average retirement age-----------------------
 retire_by_noc <- vroom(
@@ -81,17 +97,22 @@ retire_by_noc <- vroom(
   filter(
     syear %in% min_year:max_year,
     noc_5 != "missi"
-  )
+  )%>%
+  left_join(noc21_descriptions)
+
+
+
 #nest by year and NOC, then calculate average for each nest--------------------
 nested <- retire_by_noc %>%
-  group_by(syear, noc_5) %>%
+  group_by(syear, noc_5, class_title) %>%
   nest() %>%
   mutate(retire_age = map_dbl(data, ave_retire_age))
 #make wide, replace 0s with NAs
 retire_wide <- nested %>%
   select(-data) %>%
-  pivot_wider(id_cols = noc_5, names_from = syear, values_from = retire_age) %>%
-  mutate(across(where(is.numeric), ~ if_else(near(.x, 0), NA_real_, .x)))
+  pivot_wider(id_cols = c(noc_5, class_title), names_from = syear, values_from = retire_age) %>%
+  mutate(across(where(is.numeric), ~ if_else(near(.x, 0), NA_real_, .x)))%>%
+  arrange(noc_5)
 #write to excel--------------------------------------
 wb <- XLConnect::loadWorkbook(here("out", paste0("Average retirement age for 5 digit NOC,", date_range, ".xlsx")), create = TRUE)
 write_sheet("Average Retirement Age", retire_wide, title = NULL, 7000, 3000, date_range)

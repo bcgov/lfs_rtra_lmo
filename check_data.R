@@ -21,7 +21,7 @@ by_noc <- status_by_noc%>%
   pull(wide)
 noc_total <- by_noc[[1]]%>%
   filter(noc_5=="Total")%>%
-  pivot_longer(cols=-noc_5, names_to="syear", values_to="noc")%>%
+  pivot_longer(cols=-c(noc_5, class_title), names_to="syear", values_to="noc")%>%
   select(-noc_5)
 
 totals <- full_join(naics_total, noc_total)%>%
@@ -43,7 +43,8 @@ cansim <- cansim_dat%>%
 all_totals <- full_join(totals, cansim)%>%
   mutate(cansim_close=near(lmo, cansim, tol=50))%>%
   select(syear, !contains("close"), contains("close"))%>%
-  mutate(across(where(is.numeric), round))
+  mutate(across(where(is.numeric), round))%>%
+  select(-class_title)
 
 write_csv(x = all_totals, file = here("out","Comparison of Totals.csv"))
 write_csv(x = naics_subtotal, file = here("out","Comparison of Naics Subtotals.csv"))

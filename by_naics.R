@@ -35,6 +35,14 @@ tidy_mapping <- read_excel(here("data","mapping","2023_naics_to_lmo.xlsx"))%>%
 
 write_csv(tidy_mapping, here("data","mapping", "tidy_2023_naics_to_lmo.csv"))
 
+#get naics descriptions------------------
+
+naics_descriptions <- read_csv(here("data", "mapping", "naics17descriptions.csv"),
+                               col_types = cols(
+                                 class_title = col_character(),
+                                 naics = col_character()
+                               ))
+
 #raw data------------------
 emp_4digitnaics_regional <- vroom(here("data",
                                        "rtra",
@@ -77,7 +85,11 @@ four_regional_emp<- recent_nested%>%
 
 four_regional_emp<- bind_rows(four_regional_emp, agg_north_coast_nechako(four_regional_emp, naics_5))%>%
   mutate(bc_region=if_else(is.na(bc_region), "British Columbia", bc_region))%>%
-  arrange(bc_region)
+  arrange(bc_region)%>%
+  mutate(agg_wide=map(agg_wide, add_naics_5),
+         agg_wide=map(agg_wide, rearrange_columns)
+         )
+
 
 wb <- XLConnect::loadWorkbook(here("out", paste0("Employment for 4 digit NAICS,",recent_range,".xlsx")), create = TRUE)
 four_regional_emp%>%
@@ -91,7 +103,10 @@ three_regional_emp <-recent_nested%>%
 
 three_regional_emp <- bind_rows(three_regional_emp, agg_north_coast_nechako(three_regional_emp, naics3))%>%
   mutate(bc_region=if_else(is.na(bc_region), "British Columbia", bc_region))%>%
-  arrange(bc_region)
+  arrange(bc_region)%>%
+  mutate(agg_wide=map(agg_wide, add_naics_3),
+         agg_wide=map(agg_wide, rearrange_columns)
+  )
 
 wb <- XLConnect::loadWorkbook(here("out",paste0("Employment for 3 digit NAICS,",recent_range,".xlsx")), create = TRUE)
 three_regional_emp%>%
@@ -105,27 +120,15 @@ two_regional_emp <-recent_nested%>%
 
 two_regional_emp <- bind_rows(two_regional_emp, agg_north_coast_nechako(two_regional_emp, naics2))%>%
   mutate(bc_region=if_else(is.na(bc_region), "British Columbia", bc_region))%>%
-  arrange(bc_region)
+  arrange(bc_region)%>%
+  mutate(agg_wide=map(agg_wide, add_naics_2),
+         agg_wide=map(agg_wide, rearrange_columns)
+  )
 
 wb <- XLConnect::loadWorkbook(here("out",paste0("Employment for 2 digit NAICS,",recent_range,".xlsx")), create = TRUE)
 two_regional_emp%>%
   mutate(walk2(bc_region, agg_wide, write_sheet, "Employment for 2 digit NAICS", 5000, 3000, recent_range))
 saveWorkbook(wb, here::here("out", paste0("Employment for 2 digit NAICS,",recent_range,".xlsx")))
-
-
-# #checking
-#
-#
-# rich <- vroom(here("data","rtra","by_naics","RTRA6497120_emp1620naics.csv"))%>%
-#   clean_names()%>%
-#   filter(!is.na(syear),
-#          is.na(bc_region))%>%
-#   mutate(count=round(count/12,0))
-#
-#
-# rich_total <- rich%>%
-#   filter(is.na(naics_5))
-
 
 
 

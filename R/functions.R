@@ -147,7 +147,7 @@ write_sheet <- function(long_name, tbbl, title, width1, width2, date_range) {
 format_pivot <- function(tbbl){
   tbbl%>%
     mutate(value=scales::percent(value, accuracy=.1))%>%
-    pivot_wider(id_cols=noc_5, names_from = syear, values_from = value)
+    pivot_wider(id_cols=c(noc_5, class_title), names_from = syear, values_from = value)
 }
 
 ave_retire_age <- function(tbbl){
@@ -191,9 +191,9 @@ check_naics <- function(quoted_thing, region, tol){
   two_dat <- two_dat[[1]]
 
   lmo <- get_quoted_thing(lmo_dat, quoted_thing, "lmo", lmo_ind_code, lmo_detailed_industry)
-  four <- get_quoted_thing(four_dat,quoted_thing, "four", naics_5)
-  three <- get_quoted_thing(three_dat,quoted_thing,"three", naics3)
-  two <- get_quoted_thing(two_dat,quoted_thing,"two", naics2)
+  four <- get_quoted_thing(four_dat,quoted_thing, "four", naics_5, class_title)
+  three <- get_quoted_thing(three_dat,quoted_thing,"three", naics3, class_title)
+  two <- get_quoted_thing(two_dat,quoted_thing,"two", naics2, class_title)
   lmo%>%
     full_join(four)%>%
     full_join(three)%>%
@@ -203,6 +203,27 @@ check_naics <- function(quoted_thing, region, tol){
            two_close=near(lmo, two, tol=tol)
     )
 }
+
+
+rearrange_columns <- function(tbbl){
+  tbbl%>%
+    select(contains("naics"), class_title, everything())
+}
+add_naics_5 <- function(tbbl){
+  tbbl%>%
+    mutate(naics_5=str_replace(naics_5, "0",""))%>%
+    left_join(naics_descriptions, by=c("naics_5"="naics"))
+}
+add_naics_3 <- function(tbbl){
+  tbbl%>%
+    left_join(naics_descriptions, by=c("naics3"="naics"))
+}
+add_naics_2 <- function(tbbl){
+  tbbl%>%
+    left_join(naics_descriptions, by=c("naics2"="naics"))
+}
+
+
 
 
 
