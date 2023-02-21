@@ -18,7 +18,7 @@ aggregate_pivot <- function(tbbl){
 
   aggregated_long <- tbbl%>%
     group_by(syear, lmo_ind_code, lmo_detailed_industry)%>%
-    summarise(count=round(sum(count, na.rm=TRUE),digits))%>%
+    summarise(count=round(sum(count, na.rm=TRUE) ,digits))%>%
     filter(!is.na(syear),
            !is.na(lmo_ind_code))
 
@@ -30,10 +30,10 @@ aggregate_pivot <- function(tbbl){
     mutate(unknown=total-subtotal)%>%
     pivot_longer(cols=-syear, names_to = "name", values_to = "value")%>%
     pivot_wider(names_from = syear, values_from = value)
-  diff <- diff[c(2,3,1),]
+  diff <- diff[c(2,3,1),] # reorder rows subtotal, difference, total
   diff <- diff%>%
-    mutate(lmo_ind_code=name)%>%
-    rename(lmo_detailed_industry=name)
+    mutate(lmo_ind_code=name)%>% #for binding with data
+    rename(lmo_detailed_industry=name) #for binding with data below
 
   aggregated <- aggregated_long%>%
     pivot_wider(id_cols=c(lmo_ind_code, lmo_detailed_industry), names_from = syear, values_from = count)
@@ -63,7 +63,7 @@ aggregate_pivot2 <- function(tbbl, var){
     mutate(unknown=total-subtotal)%>%
     pivot_longer(cols=-syear, names_to = "name", values_to = "value")%>%
     pivot_wider(names_from = syear, values_from = value)
-  diff <- diff[c(2,3,1),]
+  diff <- diff[c(2,3,1),] # reorder rows subtotal, difference, total
   diff <- diff%>%
     rename(!!quoted_var := name)
 
