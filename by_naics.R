@@ -15,7 +15,7 @@
 ######################################################################################
 
 # create tidy mapping file---------------
-tidy_mapping <- read_excel(here("data","mapping","2023_naics_to_lmo.xlsx"))%>%
+tidy_mapping <- read_excel(here("data","mapping","2024_naics_to_lmo.xlsx"))%>%
   clean_names()%>%
   group_by(lmo_ind_code, lmo_detailed_industry)%>%
   nest()%>%
@@ -33,7 +33,7 @@ tidy_mapping <- read_excel(here("data","mapping","2023_naics_to_lmo.xlsx"))%>%
   ungroup()%>%
   select(contains("naics"), contains("lmo"))
 
-write_csv(tidy_mapping, here("data","mapping", "tidy_2023_naics_to_lmo.csv"))
+write_csv(tidy_mapping, here("data","mapping", "tidy_2024_naics_to_lmo.csv"))
 
 #get naics descriptions------------------
 
