@@ -31,8 +31,8 @@ source(here("R", "functions.R"))
 
 # constants----------
 digits <- 0 # rounding to the nearest whole number
-date_range <- paste(minmin_year,max_year, sep = "-")
-recent_range <- paste(min_year,max_year, sep = "-")
+date_range <- paste(minmin_year, max_year, sep = "-")
+recent_range <- paste(min_year, max_year, sep = "-")
 
 source("by_naics.R")
 source("by_noc.R")

@@ -69,7 +69,7 @@ lmo_regional_emp <- bind_rows(lmo_regional_emp, agg_north_coast_nechako(lmo_regi
 wb <- XLConnect::loadWorkbook(here("out", paste0("Employment for 64 LMO Industries,",date_range,".xlsx")), create = TRUE)
 lmo_regional_emp%>%
   mutate(walk2(bc_region, agg_wide, write_sheet, "Employment for 64 LMO Industries", 5000, 15000, date_range))
-saveWorkbook(wb, here::here("out", paste0("Employment for 64 LMO Industries,",date_range,".xlsx")))
+saveWorkbook(wb, here::here("out", paste0("Employment for 64 LMO Industries",date_range,".xlsx")))
 
 # nest the recent data by region-----------------
 
@@ -91,10 +91,10 @@ four_regional_emp<- bind_rows(four_regional_emp, agg_north_coast_nechako(four_re
          )
 
 
-wb <- XLConnect::loadWorkbook(here("out", paste0("Employment for 4 digit NAICS,",recent_range,".xlsx")), create = TRUE)
+wb <- XLConnect::loadWorkbook(here("out", paste0("Employment for 4 digit NAICS",recent_range,".xlsx")), create = TRUE)
 four_regional_emp%>%
   mutate(walk2(bc_region, agg_wide, write_sheet, "Employment for 4 digit NAICS", 5000, 3000, recent_range))
-saveWorkbook(wb, here::here("out", paste0("Employment for 4 digit NAICS,",recent_range,".xlsx")))
+saveWorkbook(wb, here::here("out", paste0("Employment for 4 digit NAICS",recent_range,".xlsx")))
 
 # 3 digit level---------------
 
@@ -108,10 +108,10 @@ three_regional_emp <- bind_rows(three_regional_emp, agg_north_coast_nechako(thre
          agg_wide=map(agg_wide, rearrange_columns)
   )
 
-wb <- XLConnect::loadWorkbook(here("out",paste0("Employment for 3 digit NAICS,",recent_range,".xlsx")), create = TRUE)
+wb <- XLConnect::loadWorkbook(here("out",paste0("Employment for 3 digit NAICS",recent_range,".xlsx")), create = TRUE)
 three_regional_emp%>%
   mutate(walk2(bc_region, agg_wide, write_sheet, "Employment for 3 digit NAICS", 5000, 3000, recent_range))
-saveWorkbook(wb, here::here("out", paste0("Employment for 3 digit NAICS,",recent_range,".xlsx")))
+saveWorkbook(wb, here::here("out", paste0("Employment for 3 digit NAICS",recent_range,".xlsx")))
 
 # 2 digit level---------------
 
@@ -125,10 +125,10 @@ two_regional_emp <- bind_rows(two_regional_emp, agg_north_coast_nechako(two_regi
          agg_wide=map(agg_wide, rearrange_columns)
   )
 
-wb <- XLConnect::loadWorkbook(here("out",paste0("Employment for 2 digit NAICS,",recent_range,".xlsx")), create = TRUE)
+wb <- XLConnect::loadWorkbook(here("out",paste0("Employment for 2 digit NAICS",recent_range,".xlsx")), create = TRUE)
 two_regional_emp%>%
   mutate(walk2(bc_region, agg_wide, write_sheet, "Employment for 2 digit NAICS", 5000, 3000, recent_range))
-saveWorkbook(wb, here::here("out", paste0("Employment for 2 digit NAICS,",recent_range,".xlsx")))
+saveWorkbook(wb, here::here("out", paste0("Employment for 2 digit NAICS",recent_range,".xlsx")))
 
 
 

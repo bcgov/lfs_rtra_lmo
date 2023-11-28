@@ -72,10 +72,10 @@ format_as_percent <- nested %>%
 # bind the unformated and formated together-----------------
 status_by_noc <- bind_rows(no_format, format_as_percent)
 #save to excel-------------------------
-wb <- XLConnect::loadWorkbook(here("out", paste0("Labour force status for 5 digit NOC,", date_range, ".xlsx")), create = TRUE)
+wb <- XLConnect::loadWorkbook(here("out", paste0("Labour force status for 5 digit NOC", date_range, ".xlsx")), create = TRUE)
 status_by_noc %>%
   mutate(walk2(name, wide, write_sheet, title = NULL, 7000, 10000, date_range))
-saveWorkbook(wb, here::here("out", paste0("Labour force status for 5 digit NOC,", date_range, ".xlsx")))
+saveWorkbook(wb, here::here("out", paste0("Labour force status for 5 digit NOC", date_range, ".xlsx")))
 # average retirement age-----------------------
 retire_by_noc <- vroom(
   here(
@@ -114,8 +114,8 @@ retire_wide <- nested %>%
   mutate(across(where(is.numeric), ~ if_else(near(.x, 0), NA_real_, .x)))%>%
   arrange(noc_5)
 #write to excel--------------------------------------
-wb <- XLConnect::loadWorkbook(here("out", paste0("Average retirement age for 5 digit NOC,", date_range, ".xlsx")), create = TRUE)
+wb <- XLConnect::loadWorkbook(here("out", paste0("Average retirement age for 5 digit NOC", date_range, ".xlsx")), create = TRUE)
 write_sheet("Average Retirement Age", retire_wide, title = NULL, 7000, 3000, date_range)
-saveWorkbook(wb, here::here("out", paste0("Average retirement age for 5 digit NOC,", date_range, ".xlsx")))
+saveWorkbook(wb, here::here("out", paste0("Average retirement age for 5 digit NOC", date_range, ".xlsx")))
 
 

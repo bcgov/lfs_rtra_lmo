@@ -161,8 +161,6 @@ ave_retire_age <- function(tbbl){
     pull()
 }
 
-
-
 get_quoted_thing <- function(tbbl, quoted_thing, quoted_name, index1, index2=NULL){
   tbbl%>%
     filter({{  index1  }}==quoted_thing)%>%
