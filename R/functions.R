@@ -191,9 +191,9 @@ check_naics <- function(quoted_thing, region, tol){
   two_dat <- two_dat[[1]]
 
   lmo <- get_quoted_thing(lmo_dat, quoted_thing, "lmo", lmo_ind_code, lmo_detailed_industry)
-  four <- get_quoted_thing(four_dat,quoted_thing, "four", naics_5, class_title)
-  three <- get_quoted_thing(three_dat,quoted_thing,"three", naics3, class_title)
-  two <- get_quoted_thing(two_dat,quoted_thing,"two", naics2, class_title)
+  four <- get_quoted_thing(four_dat, quoted_thing, "four", naics_5, class_title)
+  three <- get_quoted_thing(three_dat, quoted_thing,"three", naics3, class_title)
+  two <- get_quoted_thing(two_dat, quoted_thing, "two", naics2, class_title)
   lmo%>%
     full_join(four)%>%
     full_join(three)%>%
