@@ -90,7 +90,6 @@ four_regional_emp<- bind_rows(four_regional_emp, agg_north_coast_nechako(four_re
          agg_wide=map(agg_wide, rearrange_columns)
          )
 
-
 wb <- XLConnect::loadWorkbook(here("out", paste0("Employment for 4 digit NAICS",recent_range,".xlsx")), create = TRUE)
 four_regional_emp%>%
   mutate(walk2(bc_region, agg_wide, write_sheet, "Employment for 4 digit NAICS", 5000, 3000, recent_range))
