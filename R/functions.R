@@ -99,7 +99,7 @@ agg_north_coast_nechako <- function(tbbl, var1, var2=NULL){
            data=NA)
 }
 
-write_sheet <- function(long_name, tbbl, title, width1, width2, date_range) {
+write_sheet <- function(long_name, tbbl, title, width1, width2, date_range, digits=0) {
   colnames(tbbl) <- wrapR::make_title(colnames(tbbl))
   tbbl <- tbbl%>%
     mutate(across(where(is.numeric), ~round(.x, digits=digits)))
@@ -144,16 +144,16 @@ write_sheet <- function(long_name, tbbl, title, width1, width2, date_range) {
   )
 }
 
-format_pivot <- function(tbbl){
-  tbbl%>%
-    mutate(value=scales::percent(value, accuracy=.1))%>%
-    pivot_wider(id_cols=c(noc_5, class_title), names_from = syear, values_from = value)
-}
 # format_pivot <- function(tbbl){
 #   tbbl%>%
-#     mutate(value=100*round(value, digits=4))%>%
+#     mutate(value=scales::percent(value, accuracy=.1))%>%
 #     pivot_wider(id_cols=c(noc_5, class_title), names_from = syear, values_from = value)
 # }
+format_pivot <- function(tbbl){
+  temp <- tbbl%>%
+    mutate(value=100*round(value, digits=3))%>%
+    pivot_wider(id_cols=c(noc_5, class_title), names_from = syear, values_from = value)
+}
 
 ave_retire_age <- function(tbbl){
   total <- tbbl[is.na(tbbl$age),"count"][["count"]]
