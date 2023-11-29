@@ -1,8 +1,16 @@
-seperate_naics <- function(my_string){
-  naics <-str_split(my_string, ",|&")
-  my_df <- tibble(naics=trimws(unlist(naics)))
+seperate_naics <- function(tbbl){
+  #' takes a 1 x 1 tibble as an input and splits it by symbols ", &" and returns
+  #' components in a n x 1 tibble.
+  naics <-str_split(tbbl, ",|&")
+  tibble(naics=trimws(unlist(naics)))
 }
 expand_naics <- function(tbbl){
+  #' takes a 1 x 1 tibble as an input, converts the cells contents to a string,
+  #' gets the length of the string, and returns the string if its length == 4... otherwise
+  #' if string length is 3, it pastes characters 0 through 9 on the end
+  #' if string length is 2, it pastes characters 00 through 99 on the end
+  #' if string length is 1 it pastes characters 000 through 999 on the end
+  #' returns a vector
   tmp_string <- tbbl$naics[[1]]
   tmp_length <- str_length(tmp_string)
   if(tmp_length == 4) {tmp_string}
@@ -51,7 +59,7 @@ aggregate_pivot2 <- function(tbbl, var){
 
   aggregated_long <- tbbl%>%
     group_by(syear, {{  var  }})%>%
-    summarise(count=round(sum(count, na.rm=TRUE),digits))%>%
+    summarise(count=round(sum(count, na.rm=TRUE), digits))%>%
     filter(!is.na(syear),
            !is.na({{  var  }}))
 

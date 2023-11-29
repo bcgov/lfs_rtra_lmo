@@ -31,7 +31,8 @@ files_to_archive <- list.files(here("out"))[list.files(here("out"))!="archive"]
 paths_to_archive <- here("out", files_to_archive)
 if(!dir.exists(here("out","archive", max_year))) dir.create(here("out","archive", max_year))
 new_paths <- here("out","archive", max_year, files_to_archive)
-file.rename(paths_to_archive, new_paths)
+file.copy(paths_to_archive, new_paths, overwrite=TRUE)
+file.remove(paths_to_archive)
 #run the scripts---------------
 source("by_naics.R")
 source("by_noc.R")
