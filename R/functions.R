@@ -144,11 +144,6 @@ write_sheet <- function(long_name, tbbl, title, width1, width2, date_range, digi
   )
 }
 
-# format_pivot <- function(tbbl){
-#   tbbl%>%
-#     mutate(value=scales::percent(value, accuracy=.1))%>%
-#     pivot_wider(id_cols=c(noc_5, class_title), names_from = syear, values_from = value)
-# }
 format_pivot <- function(tbbl){
   temp <- tbbl%>%
     mutate(value=100*round(value, digits=3))%>%

@@ -69,12 +69,12 @@ format_as_percent <- nested %>%
   filter(name == "unemployment_rate") %>%
   mutate(wide = map(data, format_pivot))
 #save to excel-------------------------
-wb <- XLConnect::loadWorkbook(here("out", paste0("Labour force status for 5 digit NOC", recent_range, ".xlsx")), create = TRUE)
+wb <- XLConnect::loadWorkbook("non_existent_file.xlsx", create = TRUE)
 no_format %>%
   mutate(walk2(name, wide, write_sheet, title = NULL, 7000, 10000, recent_range))
 format_as_percent %>%
   mutate(walk2(name, wide, write_sheet, title = NULL, 7000, 10000, recent_range, digits=1))
-saveWorkbook(wb, here::here("out", paste0("Labour force status for 5 digit NOC", recent_range, ".xlsx")))
+saveWorkbook(wb, here::here("out", paste0("Labour force status for 5 digit NOC ", recent_range, ".xlsx")))
 # average retirement age-----------------------
 retire_by_noc <- vroom(
   here(
@@ -111,8 +111,8 @@ retire_wide <- nested %>%
   mutate(across(where(is.numeric), ~ if_else(near(.x, 0), NA_real_, .x)))%>%
   arrange(noc_5)
 #write to excel--------------------------------------
-wb <- XLConnect::loadWorkbook(here("out", paste0("Average retirement age for 5 digit NOC", recent_range, ".xlsx")), create = TRUE)
+wb <- XLConnect::loadWorkbook("non_existent_file.xlsx", create = TRUE)
 write_sheet("Average Retirement Age", retire_wide, title = NULL, 7000, 3000, recent_range)
-saveWorkbook(wb, here::here("out", paste0("Average retirement age for 5 digit NOC", recent_range, ".xlsx")))
+saveWorkbook(wb, here::here("out", paste0("Average retirement age for 5 digit NOC ", recent_range, ".xlsx")))
 
 
