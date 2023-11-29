@@ -16,7 +16,7 @@ library(cansim)
 naics_total <- check_naics("total", "British Columbia", tol=50)
 naics_subtotal <- check_naics("subtotal", "British Columbia", tol=50)
 
-by_noc <- status_by_noc%>%
+by_noc <- no_format%>%
   filter(name=="employed")%>%
   pull(wide)
 noc_total <- by_noc[[1]]%>%

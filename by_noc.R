@@ -44,7 +44,6 @@ missing_nocs <- joined%>%
 status_by_noc <- joined%>%
   filter(!is.na(syear))
 
-
 #nest by measure---------------------
 nested <- status_by_noc %>%
   filter(!is.na(noc_5)) %>%
@@ -69,11 +68,11 @@ no_format <- nested %>%
 format_as_percent <- nested %>%
   filter(name == "unemployment_rate") %>%
   mutate(wide = map(data, format_pivot))
-# bind the unformated and formated together-----------------
-status_by_noc <- bind_rows(no_format, format_as_percent)
 #save to excel-------------------------
 wb <- XLConnect::loadWorkbook(here("out", paste0("Labour force status for 5 digit NOC", date_range, ".xlsx")), create = TRUE)
-status_by_noc %>%
+no_format %>%
+  mutate(walk2(name, wide, write_sheet, title = NULL, 7000, 10000, date_range))
+format_as_percent %>%
   mutate(walk2(name, wide, write_sheet, title = NULL, 7000, 10000, date_range))
 saveWorkbook(wb, here::here("out", paste0("Labour force status for 5 digit NOC", date_range, ".xlsx")))
 # average retirement age-----------------------
@@ -99,8 +98,6 @@ retire_by_noc <- vroom(
     noc_5 != "missi"
   )%>%
   left_join(noc21_descriptions)
-
-
 
 #nest by year and NOC, then calculate average for each nest--------------------
 nested <- retire_by_noc %>%

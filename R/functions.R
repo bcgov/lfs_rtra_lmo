@@ -149,6 +149,11 @@ format_pivot <- function(tbbl){
     mutate(value=scales::percent(value, accuracy=.1))%>%
     pivot_wider(id_cols=c(noc_5, class_title), names_from = syear, values_from = value)
 }
+# format_pivot <- function(tbbl){
+#   tbbl%>%
+#     mutate(value=100*round(value, digits=4))%>%
+#     pivot_wider(id_cols=c(noc_5, class_title), names_from = syear, values_from = value)
+# }
 
 ave_retire_age <- function(tbbl){
   total <- tbbl[is.na(tbbl$age),"count"][["count"]]
