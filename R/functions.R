@@ -19,95 +19,97 @@ expand_naics <- function(tbbl){
   else if(tmp_length == 1) {paste0(tmp_string, str_pad(0:999, 3, pad = "0"))}
 }
 aggregate_pivot <- function(tbbl){
-  raw_total <- tbbl%>%
+  #' A version of the function below, to handle the fact that LMO industry has 2 grouping variables (the code and description)
+  #' input: a long tibble with columns syear, naics_5, count, naics (4digit), naics3, naics2, lmo_ind, lmo_detailed,
+  #' output: a wide tibble with columns lmo_ind_code, lmo_detailed_industry, and the year values
+  raw_total <- tbbl%>% #with RTRA data NA for naics_5 indicates it is the total across all naics.
     filter(is.na(naics_5))%>%
     select(syear, total=count)%>%
     na.omit()
-
-  aggregated_long <- tbbl%>%
+  aggregated_long <- tbbl%>% #aggregate by LMO industries
     group_by(syear, lmo_ind_code, lmo_detailed_industry)%>%
-    summarise(count=round(sum(count, na.rm=TRUE) ,digits))%>%
+    summarise(count=round(sum(count, na.rm=TRUE), digits))%>%
     filter(!is.na(syear),
            !is.na(lmo_ind_code))
-
-  subtotal <- aggregated_long%>%
+  subtotal <- aggregated_long%>% #this is the sum of the LMO industry aggregates
     group_by(syear)%>%
     summarize(subtotal=sum(count))
-
-  diff <- full_join(raw_total, subtotal)%>%
+  diff <- full_join(raw_total, subtotal)%>% #likely the total and subtotal do not match
     mutate(unknown=total-subtotal)%>%
     pivot_longer(cols=-syear, names_to = "name", values_to = "value")%>%
     pivot_wider(names_from = syear, values_from = value)
-  diff <- diff[c(2,3,1),] # reorder rows subtotal, difference, total
+    diff <- diff[c(2,3,1),] # reorder rows subtotal, difference, total
   diff <- diff%>%
-    mutate(lmo_ind_code=name)%>% #for binding with data
-    rename(lmo_detailed_industry=name) #for binding with data below
-
+    mutate(lmo_ind_code=name)%>% #need to add this column for binding with data below
+    rename(lmo_detailed_industry=name) #need to rename this column for binding with data below
   aggregated <- aggregated_long%>%
     pivot_wider(id_cols=c(lmo_ind_code, lmo_detailed_industry), names_from = syear, values_from = count)
-
   bind_rows(aggregated, diff)
 }
-
 aggregate_pivot2 <- function(tbbl, var){
+  #' A version of the function above, where there is a single grouping variable (one of the naics levels) rather than 2 (for LMO)
+  #' Inputs: a long tibble with columns: syear, naics_5, count, naics (4 digits), naics3, naics2, lmo_ind_code, lmo_detailed_industry
+  #' AND a variable to to aggregate by: one of naics5, naics, naics3, naics2
+  #' Output: a wide tibble with columns: the aggregation variable var, and year
   quoted_var <- deparse(substitute(var))
-
-  raw_total <- tbbl%>%
+  raw_total <- tbbl%>% #with RTRA data NA for naics_5 indicates it is the total across all naics.
     filter(is.na(naics_5))%>%
     select(syear, total=count)%>%
     na.omit()
-
-  aggregated_long <- tbbl%>%
+  aggregated_long <- tbbl%>% #aggregate by var
     group_by(syear, {{  var  }})%>%
     summarise(count=round(sum(count, na.rm=TRUE), digits))%>%
     filter(!is.na(syear),
            !is.na({{  var  }}))
-
-  subtotal <- aggregated_long%>%
+  subtotal <- aggregated_long%>% #the total of the above aggregation
     group_by(syear)%>%
     summarize(subtotal=sum(count))
-
   diff <- full_join(raw_total, subtotal)%>%
-    mutate(unknown=total-subtotal)%>%
+    mutate(unknown=total-subtotal)%>%#likely the total and subtotal do not match
     pivot_longer(cols=-syear, names_to = "name", values_to = "value")%>%
     pivot_wider(names_from = syear, values_from = value)
   diff <- diff[c(2,3,1),] # reorder rows subtotal, difference, total
   diff <- diff%>%
-    rename(!!quoted_var := name)
-
+    rename(!!quoted_var := name) #for binding with data below
   aggregated <- aggregated_long%>%
     pivot_wider(id_cols={{  var  }}, names_from = syear, values_from = count)%>%
     arrange({{  var  }})
-
   bind_rows(aggregated, diff)
 }
 
 agg_north_coast_nechako <- function(tbbl, var1, var2=NULL){
-  nechako <- tbbl%>%
+  #' Input: a nested tibble with columns "bc_region" "data" "agg_wide", where
+  #' agg_wide has EITHER 1 (Naics) or 2 (LMO) id column(s) and year columns
+  #' column BC region includes values (plural) "Nechako" and "North Coast"
+  #'
+  #' Output: a nested tibble with columns "bc_region" "data" "agg_wide", where
+  #' agg_wide has either 1 (Naics) or 2 (LMO) id column(s) and year columns
+  #' column BC region includes value (singular) "North Coast & Nechako"
+  #'
+  nechako_long <- tbbl%>%
     filter(bc_region=="Nechako")%>%
     ungroup()%>%
     select(agg_wide)%>%
     unnest(agg_wide)%>%
     pivot_longer(cols=-c({{  var1  }},{{  var2  }}), names_to = "year", values_to = "nechako")
-
-  north_coast <- tbbl%>%
+  north_coast_long <- tbbl%>%
     filter(bc_region=="North Coast")%>%
     ungroup()%>%
     select(agg_wide)%>%
     unnest(agg_wide)%>%
     pivot_longer(cols=-c({{  var1  }},{{  var2  }}), names_to = "year", values_to = "north_coast")
-
-  full_join(nechako, north_coast)%>%
-    mutate(value=nechako+north_coast)%>%
-    select(-nechako, -north_coast)%>%
+  full_join(nechako_long, north_coast_long)%>%
+    mutate(value=nechako+north_coast)%>% #add the two regions together
+    select(-nechako, -north_coast)%>% #get rid of the two regions
     pivot_wider(id_cols = c({{  var1  }},{{  var2  }}), names_from = year, values_from = value)%>%
     nest(data=everything())%>%
     rename(agg_wide = data)%>%
     mutate(bc_region = "North Coast & Nechako",
-           data=NA)
+           data=NA) #so the resulting nested tibble has the same format as the input tibble
 }
 
 write_sheet <- function(long_name, tbbl, title, width1, width2, date_range, digits=0) {
+  # a wrapper function to write multiple things to an excel worksheet.
   colnames(tbbl) <- wrapR::make_title(colnames(tbbl))
   tbbl <- tbbl%>%
     mutate(across(where(is.numeric), ~round(.x, digits=digits)))
@@ -151,27 +153,37 @@ write_sheet <- function(long_name, tbbl, title, width1, width2, date_range, digi
     rownames = FALSE
   )
 }
-
 format_pivot <- function(tbbl){
-  temp <- tbbl%>%
-    mutate(value=100*round(value, digits=3))%>%
+  #' Input: a long tibble with columns "noc_5","class_title","syear","value": (values are percentages).
+  #' Output: a wide tibble with columns "noc_5", "class_title" and the years.
+  tbbl%>%
+    mutate(value=100*round(value, digits=3))%>% #percentages with 1 decimal place
     pivot_wider(id_cols=c(noc_5, class_title), names_from = syear, values_from = value)
 }
 
 ave_retire_age <- function(tbbl){
-  total <- tbbl[is.na(tbbl$age),"count"][["count"]]
+  #' Input: a tibble with columns age and count
+  #' Output: a numeric vector of length 1: the average retirement age
+  total <- tbbl[is.na(tbbl$age),"count"][["count"]] #total number of retirees
   tbbl%>%
     filter(!is.na(age))%>%
     mutate(age=as.numeric(age),
            weight=count/total,
            age_weight=age*weight)%>%
-    summarize(retire_age=round(sum(age_weight, na.rm=TRUE),digits))%>%
+    summarize(retire_age=round(sum(age_weight, na.rm=TRUE), digits))%>%
     pull()
 }
 
-get_quoted_thing <- function(tbbl, quoted_thing, quoted_name, index1, index2=NULL){
+get_quoted_thing <- function(tbbl, quoted_thing, quoted_name, index1, index2){
+  #'Inputs: a tibble with 2 index columns plus years
+  #' a quoted thing like "total",
+  #' a quoted name like "lmo" or "four",
+  #' index1 like lmo_ind_code, or naics_5 and
+  #' index2 like lmo_detailed_industry or class_title
+
+  #' Output: a tibble with two columns: syear and quoted_name
   tbbl%>%
-    filter({{  index1  }}==quoted_thing)%>%
+    filter({{  index1  }}==quoted_thing)%>% #e.g. lmo_ind_code=="total"
     pivot_longer(cols=-c({{  index1  }},{{  index2  }}), names_to="syear", values_to=quoted_name)%>%
     filter(syear %in% min_year:max_year)%>%
     ungroup()%>%
@@ -179,28 +191,18 @@ get_quoted_thing <- function(tbbl, quoted_thing, quoted_name, index1, index2=NUL
 }
 
 check_naics <- function(quoted_thing, region, tol){
-  lmo_dat <- lmo_regional_emp%>%
-    filter(bc_region==region)%>%
-    pull(agg_wide)
-  lmo_dat <- lmo_dat[[1]]
-  four_dat <- four_regional_emp%>%
-    filter(bc_region==region)%>%
-    pull(agg_wide)
-  four_dat <- four_dat[[1]]
-  three_dat <- three_regional_emp%>%
-    filter(bc_region==region)%>%
-    pull(agg_wide)
-  three_dat <- three_dat[[1]]
-  two_dat <- two_regional_emp%>%
-    filter(bc_region==region)%>%
-    pull(agg_wide)
-  two_dat <- two_dat[[1]]
+  #' Inputs: a quoted thing like "total", a region like "British Columbia" and tolerance level e.g. 50
+  #' Nested dataframes ****_regional_emp are drawn from environment that have columns bc_region, data, agg_wide
+  lmo_dat <- lmo_regional_emp[lmo_regional_emp$bc_region==region, "agg_wide"][[1]][[1]]
+  four_dat <- four_regional_emp[four_regional_emp$bc_region==region, "agg_wide"][[1]][[1]]
+  three_dat <- three_regional_emp[three_regional_emp$bc_region==region, "agg_wide"][[1]][[1]]
+  two_dat <- two_regional_emp[two_regional_emp$bc_region==region, "agg_wide"][[1]][[1]]
 
   lmo <- get_quoted_thing(lmo_dat, quoted_thing, "lmo", lmo_ind_code, lmo_detailed_industry)
   four <- get_quoted_thing(four_dat, quoted_thing, "four", naics_5, class_title)
   three <- get_quoted_thing(three_dat, quoted_thing,"three", naics3, class_title)
   two <- get_quoted_thing(two_dat, quoted_thing, "two", naics2, class_title)
-  lmo%>%
+  temp <- lmo%>%
     full_join(four)%>%
     full_join(three)%>%
     full_join(two)%>%
@@ -209,22 +211,28 @@ check_naics <- function(quoted_thing, region, tol){
            two_close=near(lmo, two, tol=tol)
     )
 }
-
-
 rearrange_columns <- function(tbbl){
+  #' Input: a tibble with columns like "naics something or other", class_title, and other columns
+  #' Output: a tibble with the same columns, but rearranged
   tbbl%>%
     select(contains("naics"), class_title, everything())
 }
 add_naics_5 <- function(tbbl){
+  #'Input: a tibble with columns that include naics_5.
+  #'Output: a tibble where the naics description has been joined in.
   tbbl%>%
     mutate(naics_5=str_replace(naics_5, "0",""))%>%
     left_join(naics_descriptions, by=c("naics_5"="naics"))
 }
 add_naics_3 <- function(tbbl){
+  #'Input: a tibble with columns that include naics_3.
+  #'Output: a tibble where the naics description has been joined in.
   tbbl%>%
     left_join(naics_descriptions, by=c("naics3"="naics"))
 }
 add_naics_2 <- function(tbbl){
+  #'Input: a tibble with columns that include naics_2.
+  #'Output: a tibble where the naics description has been joined in.
   tbbl%>%
     left_join(naics_descriptions, by=c("naics2"="naics"))
 }
