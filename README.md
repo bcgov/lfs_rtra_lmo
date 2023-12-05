@@ -7,12 +7,12 @@ lfs_rtra_lmo
 
 ### Usage
 
--Submit 17!!! sas scripts found in folder `sas_code` to https://eft-tef.statcan.gc.ca/#/.
--Grab a coffee.
--place the csv files who's name contains "retire" or "stat" in the folder `by_noc`
--place the csv files who's name contains "naics" in the folder `by_naics`.
--source the file `00_source_me.R`
--output can be found in folder `out`.
+- Submit 17!!! sas scripts found in folder `sas_code` to https://eft-tef.statcan.gc.ca/#/.
+- Grab a coffee.
+- place the csv files who's name contains "retire" or "stat" in the folder `by_noc`
+- place the csv files who's name contains "naics" in the folder `by_naics`.
+- source the file `00_source_me.R`
+- output can be found in folder `out`.
 
 ### Getting Help or Reporting an Issue
 
