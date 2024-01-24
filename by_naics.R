@@ -38,9 +38,9 @@ write_csv(tidy_mapping, here("data","mapping", "tidy_2024_naics_to_lmo.csv"))
 #get naics descriptions------------------
 
 naics_descriptions <- read_csv(here("data", "mapping", "naics17descriptions.csv"),
-                               col_types = cols(
-                                 class_title = col_character(),
-                                 naics = col_character()
+                               col_types = readr::cols(
+                                 class_title = readr::col_character(),
+                                 naics = readr::col_character()
                                ))
 
 #raw data------------------

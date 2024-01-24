@@ -15,9 +15,9 @@
 ######################################################################################
 
 noc21_descriptions <- read_csv(here("data","mapping","noc21descriptions.csv"),
-                               col_types = cols(
-                                 noc_5 = col_character(),
-                                 class_title = col_character()
+                               col_types = readr::cols(
+                                 noc_5 = readr::col_character(),
+                                 class_title = readr::col_character()
                                ))
 
 # labour force status-------------------------
@@ -42,7 +42,8 @@ missing_nocs <- joined%>%
   select(noc_5, class_title)
 
 status_by_noc <- joined%>%
-  filter(!is.na(syear))
+  filter(!is.na(syear))|>
+  arrange(noc_5, syear)
 
 #nest by measure---------------------
 nested <- status_by_noc %>%
@@ -85,11 +86,11 @@ retire_by_noc <- vroom(
       pattern = "retire"
     ))
   ,
-  col_types = cols(
-    SYEAR = col_double(),
-    NOC_5 = col_character(), #need to specify not a number so leading zeros not stripped.
-    AGE = col_character(),
-    `_COUNT_` = col_double()
+  col_types = vroom::cols(
+    SYEAR = vroom::col_double(),
+    NOC_5 = vroom::col_character(), #need to specify not a number so leading zeros not stripped.
+    AGE = vroom::col_character(),
+    `_COUNT_` = vroom::col_double()
   )
 ) %>%
   clean_names() %>%
