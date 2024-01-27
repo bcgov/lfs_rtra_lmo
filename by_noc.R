@@ -108,6 +108,7 @@ nested <- retire_by_noc %>%
 #make wide, replace 0s with NAs
 retire_wide <- nested %>%
   select(-data) %>%
+  arrange(noc_5, syear)|>
   pivot_wider(id_cols = c(noc_5, class_title), names_from = syear, values_from = retire_age) %>%
   mutate(across(where(is.numeric), ~ if_else(near(.x, 0), NA_real_, .x)))%>%
   arrange(noc_5)
