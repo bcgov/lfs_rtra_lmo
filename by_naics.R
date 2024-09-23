@@ -50,8 +50,7 @@ emp_4digitnaics_regional <- vroom(here("data",
                                        list.files(here("data","rtra", "by_naics"),
                                                   pattern = "naics")))%>%
   clean_names()%>%
-  filter(syear %in% minmin_year:max_year,
-         !naics_5 %in% c("01100","02100"))%>%
+  filter(syear %in% minmin_year:max_year)%>%
   mutate(count=count/12,
          naics=str_sub(naics_5,2,5))%>%
   full_join(tidy_mapping)
