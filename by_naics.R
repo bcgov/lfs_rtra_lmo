@@ -35,7 +35,7 @@ tidy_mapping <- read_excel(here("data","mapping","2024_naics_to_lmo.xlsx"))%>%
 
 write_csv(tidy_mapping, here("data","mapping", "tidy_2024_naics_to_lmo.csv"))
 
-#get naics descriptions------------------
+# get naics descriptions (called directly by functions in R/functions.R)
 
 naics_descriptions <- read_csv(here("data", "mapping", "naics17descriptions.csv"),
                                col_types = readr::cols(

@@ -4,7 +4,7 @@ SET RTRAdata.LFS201115 (keep= ID SYEAR AGE WHYLEFT NOC_5);
 /* Age 15 or over */
 if AGE >= 15;
 
-If WHYLEFT = 18; /* Reason to left the previous job = Retired */
+If WHYLEFT = 18; /* Reason left the previous job = Retired */
 
 /*First half of the NOCS plus missing*/
 

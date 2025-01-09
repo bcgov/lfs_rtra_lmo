@@ -76,7 +76,9 @@ no_format %>%
 format_as_percent %>%
   mutate(walk2(name, wide, write_sheet, title = NULL, 7000, 10000, recent_range, digits=1))
 saveWorkbook(wb, here::here("out", paste0("Labour force status for 5 digit NOC ", recent_range, ".xlsx")))
+
 # average retirement age-----------------------
+
 retire_by_noc <- vroom(
   here(
     "data",

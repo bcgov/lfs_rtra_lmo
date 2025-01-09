@@ -110,7 +110,7 @@ agg_north_coast_nechako <- function(tbbl, var1, var2=NULL){
 
 write_sheet <- function(long_name, tbbl, title, width1, width2, date_range, digits=0) {
   # a wrapper function to write multiple things to an excel worksheet.
-  colnames(tbbl) <- wrapR::make_title(colnames(tbbl))
+  colnames(tbbl) <- make_title(colnames(tbbl))
   tbbl <- tbbl%>%
     mutate(across(where(is.numeric), ~round(.x, digits=digits)))
   title <- paste(title, long_name, date_range, sep=" ")%>%
@@ -238,6 +238,9 @@ add_naics_2 <- function(tbbl){
 }
 
 
+make_title <- function(strng){
+  strng <- str_to_title(str_replace_all(strng,"_"," "))
+}
 
 
 
