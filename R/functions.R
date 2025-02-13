@@ -206,9 +206,9 @@ check_naics <- function(quoted_thing, region, tol){
     full_join(four)%>%
     full_join(three)%>%
     full_join(two)%>%
-    mutate(four_close=near(lmo, four, tol=tol),
-           three_close=near(lmo, three, tol=tol),
-           two_close=near(lmo, two, tol=tol)
+    mutate("four_within_{tolerance}":=near(lmo, four, tol=tol),
+           "three_within_{tolerance}":=near(lmo, three, tol=tol),
+           "two_within_{tolerance}":=near(lmo, two, tol=tol)
     )
 }
 rearrange_columns <- function(tbbl){
@@ -221,7 +221,6 @@ add_naics_5 <- function(tbbl){
   #'Input: a tibble with columns that include naics_5.
   #'Output: a tibble where the naics description has been joined in.
   tbbl%>%
-    mutate(naics_5=str_replace(naics_5, "0",""))%>%
     left_join(naics_descriptions, by=c("naics_5"="naics"))
 }
 add_naics_3 <- function(tbbl){
