@@ -14,34 +14,17 @@
 #NOTE THIS FILE DEPENDS ON CONSTANTS AND LIBRARIES LOADED IN THE FILE 00_source_me.R
 ######################################################################################
 
-# create tidy mapping file---------------
-tidy_mapping <- read_excel(here("data","mapping","2024_naics_to_lmo.xlsx"))%>%
-  clean_names()%>%
-  group_by(lmo_ind_code, lmo_detailed_industry)%>%
-  nest()%>%
-  mutate(data=map(data, seperate_naics))%>%
-  unnest(data)%>%
-  na.omit()%>%
-  rowid_to_column()%>%
-  group_by(rowid, lmo_ind_code, lmo_detailed_industry)%>%
-  nest()%>%
-  mutate(data=map(data,expand_naics))%>%
-  unnest(data)%>%
-  rename(naics=data)%>%
-  mutate(naics3=str_sub(naics,1,3),
-         naics2=str_sub(naics,1,2))%>%
-  ungroup()%>%
-  select(contains("naics"), contains("lmo"))
-
-write_csv(tidy_mapping, here("data","mapping", "tidy_2024_naics_to_lmo.csv"))
+tidy_mapping <- read_excel(here("data",
+                                "mapping",
+                                "industry_mapping_2025_with_stokes_agg.xlsx"))|>
+  select(naics_5, contains("lmo"))|>
+  mutate(naics3=str_sub(naics_5, 2, -2), .after=naics_5)|>
+  mutate(naics2=str_sub(naics_5, 2, -3), .after=naics3)|>
+  filter(lmo_detailed_industry!="Total, All Industries")
 
 # get naics descriptions (called directly by functions in R/functions.R)
 
-naics_descriptions <- read_csv(here("data", "mapping", "naics17descriptions.csv"),
-                               col_types = readr::cols(
-                                 class_title = readr::col_character(),
-                                 naics = readr::col_character()
-                               ))
+naics_descriptions <- read_excel(here("data","mapping","naics_descriptions_2022.xlsx"))
 
 #raw data------------------
 emp_4digitnaics_regional <- vroom(here("data",
@@ -49,10 +32,10 @@ emp_4digitnaics_regional <- vroom(here("data",
                                        "by_naics",
                                        list.files(here("data","rtra", "by_naics"),
                                                   pattern = "naics")))%>%
-  clean_names()%>%
+  clean_names()|>
+  arrange(syear, naics_5)%>%
   filter(syear %in% minmin_year:max_year)%>%
-  mutate(count=count/12,
-         naics=str_sub(naics_5,2,5))%>%
+  mutate(count=count/12)%>%
   full_join(tidy_mapping)
 
 #lmo industry aggregation-------------

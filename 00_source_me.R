@@ -31,8 +31,8 @@ source(here("R", "functions.R"))
 #move old files to archive-------------------------------
 files_to_archive <- list.files(here("out"))[list.files(here("out"))!="archive"]
 paths_to_archive <- here("out", files_to_archive)
-if(!dir.exists(here("out","archive", max_year))) dir.create(here("out","archive", max_year))
-new_paths <- here("out","archive", max_year, files_to_archive)
+if(!dir.exists(here("out_archive", max_year))) dir.create(here("out_archive", max_year))
+new_paths <- here("out_archive", max_year, files_to_archive)
 file.copy(paths_to_archive, new_paths, overwrite=TRUE)
 file.remove(paths_to_archive)
 #run the scripts---------------

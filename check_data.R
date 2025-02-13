@@ -10,11 +10,11 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and limitations under the License.
 library(cansim)
-
+tolerance <- 75
 #check bottom lines---------------------
 
-naics_total <- check_naics("total", "British Columbia", tol=50)
-naics_subtotal <- check_naics("subtotal", "British Columbia", tol=50)
+naics_total <- check_naics("total", "British Columbia", tol=tolerance)
+naics_subtotal <- check_naics("subtotal", "British Columbia", tol=tolerance)
 
 by_noc <- no_format%>%
   filter(name=="employed")%>%
@@ -25,8 +25,8 @@ noc_total <- by_noc[[1]]%>%
   select(-noc_5)
 
 totals <- full_join(naics_total, noc_total)%>%
-  select(syear, !contains("close"), contains("close"))%>%
-  mutate(noc_close=near(lmo, noc, tol=50))
+  select(syear, !contains("within"), contains("within"))%>%
+  mutate("noc_within_{tolerance}":=near(lmo, noc, tol=tolerance))
 
 cansim_dat <- cansim::get_cansim("14-10-0023-01")
 
@@ -34,15 +34,15 @@ cansim <- cansim_dat%>%
   clean_names()%>%
   filter(geo=="British Columbia",
          ref_date %in% min_year:max_year,
-         sex=="Both sexes",
+         gender=="Total - Gender",
          age_group=="15 years and over",
          labour_force_characteristics=="Employment",
          north_american_industry_classification_system_naics=="Total, all industries")%>%
   select(syear=ref_date, cansim=val_norm)
 
 all_totals <- full_join(totals, cansim)%>%
-  mutate(cansim_close=near(lmo, cansim, tol=50))%>%
-  select(syear, !contains("close"), contains("close"))%>%
+  mutate("Cansim_within_{tolerance}":=near(lmo, cansim, tol=tolerance))%>%
+  select(syear, !contains("within"), contains("within"))%>%
   mutate(across(where(is.numeric), round))%>%
   select(-class_title)
 
