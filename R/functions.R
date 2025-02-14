@@ -35,7 +35,7 @@ aggregate_pivot <- function(tbbl){
     group_by(syear)%>%
     summarize(subtotal=sum(count))
   diff <- full_join(raw_total, subtotal)%>% #likely the total and subtotal do not match
-    mutate(unknown=total-subtotal)%>%
+    mutate(difference=total-subtotal)%>%
     pivot_longer(cols=-syear, names_to = "name", values_to = "value")%>%
     pivot_wider(names_from = syear, values_from = value)
     diff <- diff[c(2,3,1),] # reorder rows subtotal, difference, total
@@ -65,7 +65,7 @@ aggregate_pivot2 <- function(tbbl, var){
     group_by(syear)%>%
     summarize(subtotal=sum(count))
   diff <- full_join(raw_total, subtotal)%>%
-    mutate(unknown=total-subtotal)%>%#likely the total and subtotal do not match
+    mutate(difference=total-subtotal)%>%#likely the total and subtotal do not match
     pivot_longer(cols=-syear, names_to = "name", values_to = "value")%>%
     pivot_wider(names_from = syear, values_from = value)
   diff <- diff[c(2,3,1),] # reorder rows subtotal, difference, total

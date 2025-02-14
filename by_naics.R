@@ -68,7 +68,7 @@ four_regional_emp<- recent_nested%>%
 four_regional_emp<- bind_rows(four_regional_emp, agg_north_coast_nechako(four_regional_emp, naics_5))%>%
   mutate(bc_region=if_else(is.na(bc_region), "British Columbia", bc_region))%>%
   arrange(bc_region)%>%
-  mutate(agg_wide=map(agg_wide, add_naics_5),
+  mutate(agg_wide=map(agg_wide, add_naics_5), #adds in the naics descriptions
          agg_wide=map(agg_wide, rearrange_columns)
          )
 
@@ -85,7 +85,7 @@ three_regional_emp <-recent_nested%>%
 three_regional_emp <- bind_rows(three_regional_emp, agg_north_coast_nechako(three_regional_emp, naics3))%>%
   mutate(bc_region=if_else(is.na(bc_region), "British Columbia", bc_region))%>%
   arrange(bc_region)%>%
-  mutate(agg_wide=map(agg_wide, add_naics_3),
+  mutate(agg_wide=map(agg_wide, add_naics_3),#adds in the naics descriptions
          agg_wide=map(agg_wide, rearrange_columns)
   )
 
@@ -102,7 +102,7 @@ two_regional_emp <-recent_nested%>%
 two_regional_emp <- bind_rows(two_regional_emp, agg_north_coast_nechako(two_regional_emp, naics2))%>%
   mutate(bc_region=if_else(is.na(bc_region), "British Columbia", bc_region))%>%
   arrange(bc_region)%>%
-  mutate(agg_wide=map(agg_wide, add_naics_2),
+  mutate(agg_wide=map(agg_wide, add_naics_2),#adds in the naics descriptions
          agg_wide=map(agg_wide, rearrange_columns)
   )
 
