@@ -14,14 +14,15 @@
 #NOTE THIS FILE DEPENDS ON CONSTANTS AND LIBRARIES LOADED IN THE FILE 00_source_me.R
 ######################################################################################
 
-noc21_descriptions <- read_csv(here("data","mapping","noc21descriptions.csv"),
-                               col_types = readr::cols(
-                                 noc_5 = readr::col_character(),
-                                 class_title = readr::col_character()
-                               ))
+noc21_descriptions <- readxl::read_excel(here("data",
+                                              "mapping",
+                                              "noc21descriptions.xlsx"),
+                                         col_types = "text")|>
+  mutate(noc_5=str_pad(noc_5, width=5, side="left", pad="0"))
+
 
 # labour force status-------------------------
-joined <- vroom(here(
+status_by_noc <- vroom(here(
   "data",
   "rtra",
   "by_noc",
@@ -37,12 +38,24 @@ joined <- vroom(here(
   mutate(count = round(count / 12, digits))%>%
   full_join(noc21_descriptions)
 
-missing_nocs <- joined%>%
-  filter(is.na(syear))%>%
-  select(noc_5, class_title)
+# adjust teachers: allocate  noc 41229 to nocs 41220 41221 proportionately
 
-status_by_noc <- joined%>%
-  filter(!is.na(syear))|>
+allocate_to <- status_by_noc|>
+  filter(noc_5 %in% c(41220, 41221))|>
+  group_by(syear, lf_stat)|>
+  mutate(prop=count/sum(count))
+
+allocate_from <- status_by_noc|>
+  filter(noc_5==41229)|>
+  select(syear, lf_stat, to_be_allocated=count)
+
+allocated <- full_join(allocate_to, allocate_from)|>
+  mutate(count=count+prop*to_be_allocated)|>
+  select(-prop, -to_be_allocated)
+
+status_by_noc <- status_by_noc|>
+  filter(!noc_5 %in% c(41220, 41221, 41229))|>
+  bind_rows(allocated)|>
   arrange(noc_5, syear)
 
 #nest by measure---------------------
@@ -63,6 +76,7 @@ no_format <- nested %>%
   filter(name != "unemployment_rate") %>%
   mutate(
     wide = map(data, pivot_wider, id_cols = c(noc_5, class_title), names_from = syear, values_from = value),
+    wide = map(wide, remove_na_column),
     wide = map(wide, adorn_totals)
   )
 # for unemployment rate format as a percent, make wide, no totals-----------------
@@ -75,7 +89,7 @@ no_format %>%
   mutate(walk2(name, wide, write_sheet, title = NULL, 7000, 10000, recent_range))
 format_as_percent %>%
   mutate(walk2(name, wide, write_sheet, title = NULL, 7000, 10000, recent_range, digits=1))
-saveWorkbook(wb, here::here("out", paste0("Labour force status for 5 digit NOC ", recent_range, ".xlsx")))
+saveWorkbook(wb, here::here("out", paste0("Labour force status for 5 digit NOC (41229 split)", recent_range, ".xlsx")))
 
 # average retirement age-----------------------
 

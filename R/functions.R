@@ -158,7 +158,8 @@ format_pivot <- function(tbbl){
   #' Output: a wide tibble with columns "noc_5", "class_title" and the years.
   tbbl%>%
     mutate(value=100*round(value, digits=3))%>% #percentages with 1 decimal place
-    pivot_wider(id_cols=c(noc_5, class_title), names_from = syear, values_from = value)
+    pivot_wider(id_cols=c(noc_5, class_title), names_from = syear, values_from = value)|>
+    select(-`NA`)
 }
 
 ave_retire_age <- function(tbbl){
@@ -241,6 +242,9 @@ make_title <- function(strng){
   strng <- str_to_title(str_replace_all(strng,"_"," "))
 }
 
-
+remove_na_column <- function(tbbl){
+  tbbl|>
+    select(-`NA`)
+}
 
 
