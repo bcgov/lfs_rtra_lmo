@@ -14,28 +14,34 @@
 #NOTE THIS FILE DEPENDS ON CONSTANTS AND LIBRARIES LOADED IN THE FILE 00_source_me.R
 ######################################################################################
 
-noc21_descriptions <- readxl::read_excel(here("data",
-                                              "mapping",
-                                              "noc21descriptions.xlsx"),
+noc21_descriptions <- readxl::read_excel(resolve_current("noc_descriptions"),
                                          col_types = "text")|>
   mutate(noc_5=str_pad(noc_5, width=5, side="left", pad="0"))
 
 
 # labour force status-------------------------
-status_by_noc <- vroom(here(
-  "data",
-  "rtra",
-  "by_noc",
-  list.files(here("data", "rtra", "by_noc"),
-    pattern = "stat"
-  )
-)) %>%
+
+lf_status_files <- c(resolve_current("lf_status_1115_p1"),
+                     resolve_current("lf_status_1115_p2"),
+                     resolve_current("lf_status_1620_p1"),
+                     resolve_current("lf_status_1620_p2"),
+                     resolve_current("lf_status_2125_p1"),
+                     resolve_current("lf_status_2125_p2")
+                     )
+
+status_by_noc <- vroom(lf_status_files,
+                       col_types = vroom::cols(
+                         SYEAR = vroom::col_double(),
+                         NOC_5 = vroom::col_character(), #need to specify not a number so leading zeros not stripped.
+                         LF_STAT = vroom::col_character(),
+                         `_COUNT_` = vroom::col_double()
+                       )
+                       )%>%
   clean_names() %>%
-  filter(
-    syear %in% min_year:max_year,
-    noc_5 != "missi"
-  ) %>%
-  mutate(count = round(count / 12, digits))%>%
+  filter(noc_5 != "missi",
+         syear %in% min_year:max_year) %>%
+  mutate(count = round(count / 12, digits),
+         noc_5=str_pad(noc_5, width = 5, pad = "0"))%>%
   full_join(noc21_descriptions)
 
 # adjust teachers: allocate  noc 41229 to nocs 41220 41221 proportionately
@@ -93,15 +99,15 @@ saveWorkbook(wb, here::here("out", paste0("Labour force status for 5 digit NOC (
 
 # average retirement age-----------------------
 
-retire_by_noc <- vroom(
-  here(
-    "data",
-    "rtra",
-    "by_noc",
-    list.files(here("data", "rtra", "by_noc"),
-      pattern = "retire"
-    ))
-  ,
+retire_files <- c(resolve_current("retirement_age_1115_p1"),
+                  resolve_current("retirement_age_1115_p2"),
+                  resolve_current("retirement_age_1620_p1"),
+                  resolve_current("retirement_age_1620_p2"),
+                  resolve_current("retirement_age_2125_p1"),
+                  resolve_current("retirement_age_2125_p2")
+                  )
+
+retire_by_noc <- vroom(retire_files,
   col_types = vroom::cols(
     SYEAR = vroom::col_double(),
     NOC_5 = vroom::col_character(), #need to specify not a number so leading zeros not stripped.

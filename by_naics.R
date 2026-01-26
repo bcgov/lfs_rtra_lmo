@@ -14,24 +14,27 @@
 #NOTE THIS FILE DEPENDS ON CONSTANTS AND LIBRARIES LOADED IN THE FILE 00_source_me.R
 ######################################################################################
 
-tidy_mapping <- read_excel(here("data",
-                                "mapping",
-                                "industry_mapping_2025_with_stokes_agg.xlsx"))|>
+tidy_mapping <- read_excel(resolve_current("industry_mapping"))|>
   select(naics_5, contains("lmo"))|>
   mutate(naics3=str_sub(naics_5, 2, -2), .after=naics_5)|>
   mutate(naics2=str_sub(naics_5, 2, -3), .after=naics3)|>
   filter(lmo_detailed_industry!="Total, All Industries")
 
-# get naics descriptions (called directly by functions in R/functions.R)
+num_ind <- length(unique(tidy_mapping$lmo_ind_code)) #used for file naming
 
-naics_descriptions <- read_excel(here("data","mapping","naics_descriptions_2022.xlsx"))
+# get naics descriptions (called directly by functions in R/functions.R)
+naics_descriptions <- read_excel(resolve_current("naics_descriptions"))
 
 #raw data------------------
-emp_4digitnaics_regional <- vroom(here("data",
-                                       "rtra",
-                                       "by_naics",
-                                       list.files(here("data","rtra", "by_naics"),
-                                                  pattern = "naics")))%>%
+
+regional_employment_files <- c(resolve_current("regional_employment_0005"),
+                               resolve_current("regional_employment_0610"),
+                               resolve_current("regional_employment_1115"),
+                               resolve_current("regional_employment_1620"),
+                               resolve_current("regional_employment_2125")
+)
+
+emp_4digitnaics_regional <- vroom(regional_employment_files)%>%
   clean_names()|>
   arrange(syear, naics_5)%>%
   filter(syear %in% minmin_year:max_year)%>%
@@ -50,8 +53,8 @@ lmo_regional_emp <- bind_rows(lmo_regional_emp, agg_north_coast_nechako(lmo_regi
 
 wb <- XLConnect::loadWorkbook("non_existent_file.xlsx", create = TRUE)
 lmo_regional_emp%>%
-  mutate(walk2(bc_region, agg_wide, write_sheet, "Employment for 64 LMO Industries ", 5000, 15000, date_range))
-saveWorkbook(wb, here::here("out", paste0("Employment for 64 LMO Industries ",date_range,".xlsx")))
+  mutate(walk2(bc_region, agg_wide, write_sheet, paste("Employment for",num_ind,"LMO Industries"), 5000, 15000, date_range))
+saveWorkbook(wb, here::here("out", paste0("Employment for ",num_ind," LMO Industries ",date_range,".xlsx")))
 
 # nest the recent data by region-----------------
 

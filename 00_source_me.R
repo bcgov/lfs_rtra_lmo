@@ -28,6 +28,7 @@ date_range <- paste(minmin_year, max_year, sep = "-")
 recent_range <- paste(min_year, max_year, sep = "-")
 ###################################################
 source(here("R", "functions.R"))
+source(here("..","shared_functions","functions.R"))
 #move old files to archive-------------------------------
 files_to_archive <- list.files(here("out"))[list.files(here("out"))!="archive"]
 paths_to_archive <- here("out", files_to_archive)
@@ -35,6 +36,17 @@ if(!dir.exists(here("out_archive", max_year))) dir.create(here("out_archive", ma
 new_paths <- here("out_archive", max_year, files_to_archive)
 file.copy(paths_to_archive, new_paths, overwrite=TRUE)
 file.remove(paths_to_archive)
+#create meta data for all new files--------------------------------------
+
+# make_meta(
+#   path = "data/raw/RTRA8258901_emp2125naics.csv",
+#   dataset = "regional_employment_2125",
+#   source = "LFS via RTRA",
+#   vintage = as.character(today()),
+#   template = "data/templates/regional_employment.yml"
+# )
+#
+
 #run the scripts---------------
 source("by_naics.R")
 source("by_noc.R")
