@@ -16,6 +16,10 @@ library(janitor)
 library(readxl)
 library(vroom)
 library(XLConnect)
+library(digest)
+library(fs)
+library(yaml)
+library(tools)
 library(conflicted)
 conflicts_prefer(dplyr::filter)
 #constants
@@ -36,16 +40,9 @@ if(!dir.exists(here("out_archive", max_year))) dir.create(here("out_archive", ma
 new_paths <- here("out_archive", max_year, files_to_archive)
 file.copy(paths_to_archive, new_paths, overwrite=TRUE)
 file.remove(paths_to_archive)
-#create meta data for all new files--------------------------------------
+#add new files to data pond-------------------------------------
 
-# make_meta(
-#   path = "data/raw/RTRA8258901_emp2125naics.csv",
-#   dataset = "regional_employment_2125",
-#   source = "LFS via RTRA",
-#   vintage = as.character(today()),
-#   template = "data/templates/regional_employment.yml"
-# )
-#
+ingest_pond()
 
 #run the scripts---------------
 source("by_naics.R")

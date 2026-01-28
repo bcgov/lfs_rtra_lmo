@@ -14,19 +14,19 @@
 #NOTE THIS FILE DEPENDS ON CONSTANTS AND LIBRARIES LOADED IN THE FILE 00_source_me.R
 ######################################################################################
 
-noc21_descriptions <- readxl::read_excel(resolve_current("noc_descriptions"),
+noc21_descriptions <- readxl::read_excel(resolve_current("noc_descriptions.xlsx"),
                                          col_types = "text")|>
   mutate(noc_5=str_pad(noc_5, width=5, side="left", pad="0"))
 
 
 # labour force status-------------------------
 
-lf_status_files <- c(resolve_current("lf_status_1115_p1"),
-                     resolve_current("lf_status_1115_p2"),
-                     resolve_current("lf_status_1620_p1"),
-                     resolve_current("lf_status_1620_p2"),
-                     resolve_current("lf_status_2125_p1"),
-                     resolve_current("lf_status_2125_p2")
+lf_status_files <- c(resolve_current("stat1115NOCp1.csv"),
+                     resolve_current("stat1115NOCp2.csv"),
+                     resolve_current("stat1620NOCp1.csv"),
+                     resolve_current("stat1620NOCp2.csv"),
+                     resolve_current("stat2125NOCp1.csv"),
+                     resolve_current("stat2125NOCp2.csv")
                      )
 
 status_by_noc <- vroom(lf_status_files,
@@ -99,12 +99,12 @@ saveWorkbook(wb, here::here("out", paste0("Labour force status for 5 digit NOC (
 
 # average retirement age-----------------------
 
-retire_files <- c(resolve_current("retirement_age_1115_p1"),
-                  resolve_current("retirement_age_1115_p2"),
-                  resolve_current("retirement_age_1620_p1"),
-                  resolve_current("retirement_age_1620_p2"),
-                  resolve_current("retirement_age_2125_p1"),
-                  resolve_current("retirement_age_2125_p2")
+retire_files <- c(resolve_current("retire1115p1.csv"),
+                  resolve_current("retire1115p2.csv"),
+                  resolve_current("retire1620p1.csv"),
+                  resolve_current("retire1620p2.csv"),
+                  resolve_current("retire2125p1.csv"),
+                  resolve_current("retire2125p2.csv")
                   )
 
 retire_by_noc <- vroom(retire_files,

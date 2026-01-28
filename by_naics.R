@@ -14,7 +14,7 @@
 #NOTE THIS FILE DEPENDS ON CONSTANTS AND LIBRARIES LOADED IN THE FILE 00_source_me.R
 ######################################################################################
 
-tidy_mapping <- read_excel(resolve_current("industry_mapping"))|>
+tidy_mapping <- read_excel(resolve_current("industry_mapping_with_stokes_agg.xlsx"))|>
   select(naics_5, contains("lmo"))|>
   mutate(naics3=str_sub(naics_5, 2, -2), .after=naics_5)|>
   mutate(naics2=str_sub(naics_5, 2, -3), .after=naics3)|>
@@ -23,15 +23,15 @@ tidy_mapping <- read_excel(resolve_current("industry_mapping"))|>
 num_ind <- length(unique(tidy_mapping$lmo_ind_code)) #used for file naming
 
 # get naics descriptions (called directly by functions in R/functions.R)
-naics_descriptions <- read_excel(resolve_current("naics_descriptions"))
+naics_descriptions <- read_excel(resolve_current("naics_descriptions.xlsx"))
 
 #raw data------------------
 
-regional_employment_files <- c(resolve_current("regional_employment_0005"),
-                               resolve_current("regional_employment_0610"),
-                               resolve_current("regional_employment_1115"),
-                               resolve_current("regional_employment_1620"),
-                               resolve_current("regional_employment_2125")
+regional_employment_files <- c(resolve_current("emp0005naics.csv"),
+                               resolve_current("emp0610naics.csv"),
+                               resolve_current("emp1115naics.csv"),
+                               resolve_current("emp1620naics.csv"),
+                               resolve_current("emp2125naics.csv")
 )
 
 emp_4digitnaics_regional <- vroom(regional_employment_files)%>%
