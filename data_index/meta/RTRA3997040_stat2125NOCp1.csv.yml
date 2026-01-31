@@ -1,0 +1,17 @@
+file: RTRA3997040_stat2125NOCp1.csv
+sha256: 1da05f31d241c32a512257f405bca9b0cff6c195d83db82ea93868ecb7ea3836
+size_bytes: 129383.0
+n_rows: 5472
+n_cols: 4
+col_names:
+- SYEAR
+- LF_STAT
+- NOC_5
+- _COUNT_
+col_types:
+- numeric
+- character
+- character
+- numeric
+created: 2026-01-28 14:15:03.046203
+semantic_name: stat2125NOCp1.csv

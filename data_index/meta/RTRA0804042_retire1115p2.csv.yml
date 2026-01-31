@@ -1,0 +1,17 @@
+file: RTRA0804042_retire1115p2.csv
+sha256: 162432327939ddfa1beb915f6b4536009e2b710a19a7ab42a1f203aceb37f615
+size_bytes: 2298981.0
+n_rows: 131508
+n_cols: 4
+col_names:
+- SYEAR
+- NOC_5
+- AGE
+- _COUNT_
+col_types:
+- numeric
+- numeric
+- character
+- numeric
+created: 2026-01-28 14:15:02.940649
+semantic_name: retire1115p2.csv

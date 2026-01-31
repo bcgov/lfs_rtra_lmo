@@ -1,0 +1,17 @@
+file: RTRA2480037_stat1115NOCp1.csv
+sha256: 76674c0f3a5e04a2947b742b328c5464443ac4685f4c3851981542ce4693178c
+size_bytes: 128947.0
+n_rows: 5472
+n_cols: 4
+col_names:
+- SYEAR
+- LF_STAT
+- NOC_5
+- _COUNT_
+col_types:
+- numeric
+- character
+- character
+- numeric
+created: 2026-01-28 14:15:03.00974
+semantic_name: stat1115NOCp1.csv

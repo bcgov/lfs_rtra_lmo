@@ -1,0 +1,17 @@
+file: RTRA7131158_retire1620p2.csv
+sha256: 7ea9c28a7552e31c6b58fa22107d0ae27210e667598cd449fb272f7f27f0089c
+size_bytes: 2368117.0
+n_rows: 135360
+n_cols: 4
+col_names:
+- SYEAR
+- NOC_5
+- AGE
+- _COUNT_
+col_types:
+- numeric
+- numeric
+- character
+- numeric
+created: 2026-01-28 14:15:03.267453
+semantic_name: retire1620p2.csv

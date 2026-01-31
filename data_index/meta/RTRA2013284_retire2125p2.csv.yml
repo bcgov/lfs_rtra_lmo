@@ -1,0 +1,17 @@
+file: RTRA2013284_retire2125p2.csv
+sha256: 7b31c08671cd1e3b1a0f38d395de7af9b4994d960290976ee967b928e62212ff
+size_bytes: 2238823.0
+n_rows: 127800
+n_cols: 4
+col_names:
+- SYEAR
+- NOC_5
+- AGE
+- _COUNT_
+col_types:
+- numeric
+- numeric
+- character
+- numeric
+created: 2026-01-28 14:15:02.97998
+semantic_name: retire2125p2.csv

@@ -1,0 +1,17 @@
+file: RTRA1381965_emp1115naics.csv
+sha256: 0949bc737d745fafd4d1f302d726416569f884d9621b365f36b23e6fcebc5aa8
+size_bytes: 476846.0
+n_rows: 16632
+n_cols: 4
+col_names:
+- SYEAR
+- BC_REGION
+- NAICS_5
+- _COUNT_
+col_types:
+- numeric
+- character
+- character
+- numeric
+created: 2026-01-28 14:15:02.951032
+semantic_name: emp1115naics.csv
