@@ -1,5 +1,6 @@
 semantic_name: stat1620NOCp2.csv
-current_file: RTRA3510144_stat1620NOCp2.csv
-sha256: 1db18cfcd36ac12a581c6ed179218818e5b8f8aaa3356765adf42e178b5495e8
+preferred: raw
+raw: RTRA3510144_stat1620NOCp2.csv
+parquet: ~
 meta_file: RTRA3510144_stat1620NOCp2.csv.yml
-updated: 2026-01-28 14:15:03.024957
+updated: 2026-01-31 19:29:55

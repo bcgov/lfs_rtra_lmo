@@ -1,5 +1,6 @@
 semantic_name: retire1620p2.csv
-current_file: RTRA7131158_retire1620p2.csv
-sha256: 7ea9c28a7552e31c6b58fa22107d0ae27210e667598cd449fb272f7f27f0089c
+preferred: raw
+raw: RTRA7131158_retire1620p2.csv
+parquet: ~
 meta_file: RTRA7131158_retire1620p2.csv.yml
-updated: 2026-01-28 14:15:03.368902
+updated: 2026-01-31 19:29:55

@@ -1,5 +1,6 @@
 semantic_name: emp2125naics.csv
-current_file: RTRA8258901_emp2125naics.csv
-sha256: e3416e2a76b1699abb9bb5aef4ba4d6614c5d8eac46e5e2c65e9b2cc6df8d757
+preferred: raw
+raw: RTRA8258901_emp2125naics.csv
+parquet: ~
 meta_file: RTRA8258901_emp2125naics.csv.yml
-updated: 2026-01-28 14:15:03.380701
+updated: 2026-01-31 19:29:55

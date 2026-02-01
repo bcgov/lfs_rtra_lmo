@@ -1,5 +1,6 @@
 semantic_name: naics_descriptions.xlsx
-current_file: 2022_naics_descriptions.xlsx
-sha256: e68382d33a1220701c139681f78de53ee3cb3f3c26c09f6927cd1c5bf61197a7
+preferred: raw
+raw: 2022_naics_descriptions.xlsx
+parquet: ~
 meta_file: 2022_naics_descriptions.xlsx.yml
-updated: 2026-01-28 14:15:02.8615
+updated: 2026-01-31 19:29:55
