@@ -18,6 +18,7 @@ library(digest)
 library(fs)
 library(yaml)
 library(tools)
+library(lme4)
 library(bcgovpond)
 library(conflicted)
 conflicts_prefer(dplyr::filter)
@@ -25,7 +26,7 @@ conflicts_prefer(dplyr::filter)
 ###################################################
 minmin_year <- 2000 #first year for the LMO data
 max_year <- year(today())-1 #last year for everything
-min_year <- max_year-9 # first year for everything else
+min_year <- 2011 # first year for everything else
 digits <- 0 # rounding to the nearest whole number
 date_range <- paste(minmin_year, max_year, sep = "-")
 recent_range <- paste(min_year, max_year, sep = "-")

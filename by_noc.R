@@ -14,10 +14,26 @@
 #NOTE THIS FILE DEPENDS ON CONSTANTS AND LIBRARIES LOADED IN THE FILE 00_source_me.R
 ######################################################################################
 
+glmer_wrapper <- function(tbbl){
+  fit <- glmer(
+    urate ~ 1 + (1 | noc_2 / noc_5),
+    weights = n,
+    family = binomial,
+    data = tbbl,
+    control = glmerControl(
+      optimizer = "bobyqa",
+      optCtrl = list(maxfun = 1e5)
+    )
+  )
+  tbbl|>
+    mutate(urate_eb=fitted(fit))
+}
+
+resp_months <- 100000 # assume that the LFS covers about 100000 BC in the labour force per year
+
 noc21_descriptions <- readxl::read_excel(resolve_current("noc_descriptions.xlsx"),
                                          col_types = "text")|>
   mutate(noc_5=str_pad(noc_5, width=5, side="left", pad="0"))
-
 
 # labour force status-------------------------
 
@@ -39,9 +55,8 @@ status_by_noc <- vroom(lf_status_files,
                        )%>%
   clean_names() %>%
   filter(noc_5 != "missi",
-         syear %in% min_year:max_year) %>%
-  mutate(count = round(count / 12, digits),
-         noc_5=str_pad(noc_5, width = 5, pad = "0"))%>%
+         syear<=max_year)|>#syear %in% min_year:max_year) %>%
+  mutate(noc_5=str_pad(noc_5, width = 5, pad = "0"))%>%
   full_join(noc21_descriptions)
 
 # adjust teachers: allocate  noc 41229 to nocs 41220 41221 proportionately
@@ -62,32 +77,52 @@ allocated <- full_join(allocate_to, allocate_from)|>
 status_by_noc <- status_by_noc|>
   filter(!noc_5 %in% c(41220, 41221, 41229))|>
   bind_rows(allocated)|>
-  arrange(noc_5, syear)
+  arrange(noc_5, syear)|>
+  filter(lf_stat %in% c("Employed","Unemployed"))
 
 #nest by measure---------------------
 nested <- status_by_noc %>%
   filter(!is.na(noc_5)) %>%
   pivot_wider(id_cols=c(noc_5, class_title, syear), names_from = lf_stat, values_from = count) %>%
   clean_names()%>%
-  select(-na, -unknown)%>%
+  group_by(syear)|>
+  mutate(noc_2=str_sub(noc_5, 1,2),.after=noc_5)|>
   mutate(
     labour_force = employed + unemployed,
-    unemployment_rate = unemployed / labour_force
-  ) %>%
+    n = labour_force/sum(labour_force)*resp_months,
+    urate = unemployed / labour_force,
+    y = urate*n
+  )|>
+  filter(labour_force>0)|>
+  group_by(syear)|>
+  nest()|>
+  mutate(data=map(data, glmer_wrapper))|>
+  unnest(data)|>
+  select(syear,
+         noc_5,
+         class_title,
+         employed,
+         unemployed,
+         labour_force,
+         unemployment_rate=urate,
+         unemployment_rate_eb=urate_eb)|>
+  mutate(employed=round(employed/12),
+         unemployed=round(unemployed/12),
+         labour_force=round(labour_force/12))|>
   pivot_longer(cols = -c(syear, class_title, noc_5), names_to = "name", values_to = "value") %>%
   group_by(name) %>%
   nest()
+
 # for counts do not format the data, make wide, add totals---------------
 no_format <- nested %>%
-  filter(name != "unemployment_rate") %>%
+  filter(!name %in% c("unemployment_rate", "unemployment_rate_eb")) %>%
   mutate(
     wide = map(data, pivot_wider, id_cols = c(noc_5, class_title), names_from = syear, values_from = value),
-    wide = map(wide, remove_na_column),
     wide = map(wide, adorn_totals)
   )
 # for unemployment rate format as a percent, make wide, no totals-----------------
 format_as_percent <- nested %>%
-  filter(name == "unemployment_rate") %>%
+  filter(name %in% c("unemployment_rate", "unemployment_rate_eb")) %>%
   mutate(wide = map(data, format_pivot))
 #save to excel-------------------------
 wb <- XLConnect::loadWorkbook("non_existent_file.xlsx", create = TRUE)
